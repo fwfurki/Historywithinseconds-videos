@@ -31,7 +31,7 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
    (`examples/titanic_scenes_standalone.js` carries its own helpers: assemble it with head.js + lab.js only.)
 5. Test frames: `SCENE=file:///ABS/scene.html node toolkit/scripts/cap.js test 100 400 ...` → check them visually (brightness, framing, label width under 680 px), and fix.
 6. Render in 2 parallel halves: `SCENE=... node cap.js full 0 N1 h1.mp4` and `... full N1 N h2.mp4` (30 fps, 720×1280), then concat with `-c copy`.
-7. Final encode: scale to 1080×1920 (lanczos), `vignette=PI/6`, `noise=alls=3:allf=t`, `subtitles=subs.ass`; narration at volume 2.0 with apad, the SFX bed at 0.55, amix normalize=0, alimiter 0.89; libx264 crf 21, maxrate 10M; aac 192k; faststart. Check that the duration is over 61 s.
+7. Final encode: scale to 1080×1920 (lanczos), `vignette=PI/6`, `noise=alls=3:allf=t`, `subtitles=subs.ass`; narration at volume 2.0 with apad, the SFX bed at 0.55, amix normalize=0, alimiter 0.89; libx264 crf 17 -preset slow, maxrate 16M bufsize 32M; aac 192k; faststart. Check that the duration is over 61 s.
 8. Copy the MP4 to `videos/<slug>.mp4` in this repo, commit and push (`git -c push.negotiate=true push origin HEAD`). Media URL: `https://raw.githubusercontent.com/fwfurki/Historywithinseconds-videos/main/videos/<slug>.mp4`
 9. Metricool `createScheduledPost` with that URL at the slot. **Immediately** add the topic to the do-not-repeat table in `toolkit/topics.md` (topic, file, slot, post id), then commit and push **before starting the next video**, so a topic can never be used twice, even if the run stops midway.
 10. End with a short summary: topics, slots, credits left, and any issues.
@@ -39,3 +39,13 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
 ## Rendering environment notes
 - Chrome is at /usr/bin/google-chrome; playwright is at /opt/npm-tools/node_modules/playwright (or set the PW env var).
 - If the playwright path or fonts differ in the new workspace, adapt `cap.js`. The fonts used are Montserrat (labels and subtitles) and DejaVu Serif (quotes).
+
+## MAXIMUM QUALITY MODE (owner's standing request, overrides speed)
+Time is not a constraint: there is no 15–20 minute budget. Spend whatever time is needed on each video; quality comes first.
+- **Script:** draft, then rewrite at least once for a sharper 3-second hook, rising suspense, a mid-video twist and a haunting final line. Verify every fact with 2+ sources.
+- **Scenes:** at least 8–10 distinct scenes per video, each with deliberate camera motion (dolly, orbit, push-in), richer models (more parts, props, crowds, environment detail), particles/weather where it fits, and smooth eased transitions. No scene held static more than ~4 s.
+- **Frame QA:** test-render at least one frame per scene plus each transition, view them, fix brightness/framing/clarity, then re-test. Do a second full QA pass on frames from the finished render before upload.
+- **Image quality:** in `renderFrame`, return `out.toDataURL('image/jpeg',0.97)` (not 0.9). Intermediate encode is crf 12 preset slow (cap.js). Final encode crf 17 preset slow, maxrate 16M.
+- **Audio:** layered SFX matched to on-screen actions, music bed that builds with the suspense and ducks under narration; listen-check levels (narration always clearly on top).
+- **Subtitles:** word-synced, checked against the audio for drift.
+- Never trade away these steps to finish faster. The only hard limits stay the same: 1 ElevenLabs take per video, max 2 videos per run, post limits.
