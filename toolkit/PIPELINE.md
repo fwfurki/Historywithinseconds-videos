@@ -22,6 +22,14 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
 - Don't schedule more than 50 posts in a calendar month (count the posts already scheduled or published that month first).
 - Caption: 1–2 punchy sentences + emoji + 4–5 hashtags, always ending with `#HistoryWithinSeconds`. Title: a short hook (under 60 characters).
 
+## Quality mode (owner's request, Nov 2026): maximum quality, no rushing
+The run starts many hours before the posts go out (it fires around 01:54 ET, and the earliest slot is 12:00 ET), so **take as long as quality needs**. Never cut corners to save time. Never fill a slot that is less than 3 hours away.
+- **Render natively at 1080×1920** instead of upscaling from 720p: set `W=1080,H=1920` in head.js, the canvas sizes in pre.html and the viewport in cap.js. Keep scene layouts written in 720-px units by wrapping each scene's 2D drawing in `cx.save();cx.scale(1.5,1.5); ... cx.restore();`. Use `toDataURL('image/jpeg',0.97)`. Test frames first to confirm nothing breaks; fall back to 720p only if it truly fails.
+- **Richer scenes**: 8–12 distinct shots per video, with smooth cinematic camera moves (dolly, orbit, push-in), never a static camera. Detailed models (period clothing, architecture, props, terrain), atmospheric particles (dust, smoke, embers, rain, snow), and depth layering in the foreground, midground and background. Keep the lighting bright and clear.
+- **Review pass**: render a test frame from the start, middle and end of *every* scene, look at each one, and fix anything muddy, dark, cluttered, off-frame or hard to understand. Repeat until every frame looks good. After the full render, extract about 12 frames from the final MP4 and check them again.
+- **Sound**: a layered music bed (drone + pulse + rises at the reveals) and an SFX hit synced to each key action, mixed under a clear narration.
+- **Encode**: in cap.js use `-crf 14 -preset slow`; final encode libx264 `-preset slow -crf 17 -maxrate 14M -bufsize 28M`, with no lanczos upscale when rendering natively. Keep the audio at aac 192k.
+
 ## Steps per video
 1. Pick a topic **not already in `toolkit/topics.md`**. Write and verify the script (150–170 words, short lines, hook first, suspense, and a haunting last line).
 2. ElevenLabs: check `account_get_usage`. If fewer than 2,000 characters remain, stop and report. Then `creative_generate_speech` (voice/model above, generations_count 1). Wait about 30 s, then `creative_get_generations` → `full_res_url`. Download it with curl (the domain elevenlabsusercontent.com is allowed).
@@ -30,8 +38,8 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
    `pre.html + '<script>' + head.js + lab.js + helpers.js + scenes_own.js + '</script></body></html>'` → `scene.html`.
    (`examples/titanic_scenes_standalone.js` carries its own helpers: assemble it with head.js + lab.js only.)
 5. Test frames: `SCENE=file:///ABS/scene.html node toolkit/scripts/cap.js test 100 400 ...` → check them visually (brightness, framing, label width under 680 px), and fix.
-6. Render in 2 parallel halves: `SCENE=... node cap.js full 0 N1 h1.mp4` and `... full N1 N h2.mp4` (30 fps, 720×1280), then concat with `-c copy`.
-7. Final encode: scale to 1080×1920 (lanczos), `vignette=PI/6`, `noise=alls=3:allf=t`, `subtitles=subs.ass`; narration at volume 2.0 with apad, the SFX bed at 0.55, amix normalize=0, alimiter 0.89; libx264 crf 17 -preset slow, maxrate 16M bufsize 32M; aac 192k; faststart. Check that the duration is over 61 s.
+6. Render in 2 parallel halves: `SCENE=... node cap.js full 0 N1 h1.mp4` and `... full N1 N h2.mp4` (30 fps, 1080×1920 native — see Quality mode), then concat with `-c copy`.
+7. Final encode: (already 1080×1920), `vignette=PI/6`, `noise=alls=3:allf=t`, `subtitles=subs.ass`; narration at volume 2.0 with apad, the SFX bed at 0.55, amix normalize=0, alimiter 0.89; libx264 crf 17 -preset slow, maxrate 16M bufsize 32M; aac 192k; faststart. Check that the duration is over 61 s.
 8. Copy the MP4 to `videos/<slug>.mp4` in this repo, commit and push (`git -c push.negotiate=true push origin HEAD`). Media URL: `https://raw.githubusercontent.com/fwfurki/Historywithinseconds-videos/main/videos/<slug>.mp4`
 9. Metricool `createScheduledPost` with that URL at the slot. **Immediately** add the topic to the do-not-repeat table in `toolkit/topics.md` (topic, file, slot, post id), then commit and push **before starting the next video**, so a topic can never be used twice, even if the run stops midway.
 10. End with a short summary: topics, slots, credits left, and any issues.
