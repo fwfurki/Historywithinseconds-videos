@@ -3,6 +3,7 @@
 This is the playbook for the daily scheduled run. Follow it end to end, with no questions to the owner.
 
 ## Channel rules (owner's requirements)
+- **Only post videos you create in this run, on NEW topics you choose yourself.** Never post, reuse or reschedule any older video in `videos/` (the files there are archived; several were made at the owner's request and must NOT be posted).
 - TikTok channel **HistoryWithinSeconds**: bizarre, disturbing, lesser-known (or famous but gripping) historical events. Audience: **US / English-speaking, not Turkish**.
 - Visuals: **fully 3D**, made with code only (the WebGL engine in `toolkit/engine`). No real photos or footage, no paintings, no slideshows, no external AI image or video services.
 - **Bright, clearly visible lighting** (an earlier video was too dark). A strong **hook** in the first 3 seconds and real **suspense**.
@@ -17,7 +18,7 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
 ## Posting schedule (Metricool free plan: about 50 posts/month)
 - Brand blogId **8271048**, network **tiktok**, autoPublish **true**, tiktokData.isAigc **true**, and tiktokData.title is **required**.
 - Pattern **2-2-1**, repeating from **Sun 2026-11-22**: day index = days since 2026-11-22; index mod 3 is 0 or 1 → 2 posts (12:00 and 18:00 America/New_York); index mod 3 is 2 → 1 post (18:00 America/New_York).
-- Before making anything, call getScheduledPosts for the next 4 days. Find the **empty slots** of the pattern in the next 48 hours (the earliest first), and make **at most 2 videos per run** to fill them. If none are empty, stop.
+- Before making anything, call getScheduledPosts for the next 4 days. Posts with `draft: true` do NOT count; treat their slots as empty and leave the drafts untouched. Find the **empty slots** of the pattern in the next 48 hours (the earliest first), and make **at most 2 videos per run** to fill them. If none are empty, stop.
 - Don't schedule more than 50 posts in a calendar month (count the posts already scheduled or published that month first).
 - Caption: 1–2 punchy sentences + emoji + 4–5 hashtags, always ending with `#HistoryWithinSeconds`. Title: a short hook (under 60 characters).
 

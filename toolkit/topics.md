@@ -1,5 +1,7 @@
 # Topics already made (don't repeat)
 
+Status: the first six rows are DRAFTS. Never post them; the topics are taken anyway, so don't make them again.
+
 | Topic | File | Scheduled (ET) | Metricool post id |
 |---|---|---|---|
 | Great Molasses Flood (1919) | molasses_flood.mp4 | 2026-11-22 12:00 | 436880273 |
