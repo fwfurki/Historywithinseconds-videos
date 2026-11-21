@@ -5,7 +5,7 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
 ## Channel rules (owner's requirements)
 - **Only post videos you create in this run, on NEW topics you choose yourself.** Never post, reuse or reschedule any older video in `videos/` (the files there are archived; several were made at the owner's request and must NOT be posted).
 - TikTok channel **HistoryWithinSeconds**: bizarre, disturbing, lesser-known (or famous but gripping) historical events. Audience: **US / English-speaking, not Turkish**.
-- Visuals: **fully 3D**, made with code only (the WebGL engine in `toolkit/engine`). No real photos or footage, no paintings, no slideshows, no external AI image or video services.
+- Visuals: **fully 3D** in the cel-shaded "case file" style below, made with code only (the WebGL engine in `toolkit/engine`). No real photos or footage, no paintings, no slideshows, no external AI image or video services.
 - **Bright, clearly visible lighting** (an earlier video was too dark). A strong **hook** in the first 3 seconds and real **suspense**.
 - Every scene must be **understandable from the animation alone**: show the action clearly (who, what, where), not abstract shapes. Use a few short on-screen labels per scene. Detailed models (tapered hulls, windows, figures with hats and limbs and so on), not bare blocks.
 - Narration: ElevenLabs voice **"True - Crime & Horror Narrator"** (voice_id `tZssYepgGaQmegsMEXjK`), model `eleven_v4`, **generations_count 1** (one take only; never retry a generation). Be economical with credits.
@@ -14,6 +14,19 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
 - Facts: web-search and verify every number, date and quote before narrating. Hedge where sources disagree.
 - Music and SFX: synthesize them yourself with numpy (`sfx_template.py`), so they're copyright-free.
 - Avoid Nazi symbols and other hate symbols in visuals.
+
+## Visual style: "case file" cel-shaded 3D (owner's reference, Nov 2026; this OVERRIDES the older dark-cinematic look)
+The owner likes the look of a popular explainer channel: clean, bright, cel-shaded 3D that anyone can follow at a glance. Recreate that **style** with our own branding. Never copy any other channel's name, logo, characters or wording.
+- **Cel-shaded / toon 3D look**: flat, smoothly shaded colours (2–3 light bands with a toon ramp in the fragment shader, not glossy realism), plus **black ink outlines** on every character and key object. Implement the outlines in head.js with the inverted-hull method: draw each mesh a second time with front-face culling, vertices pushed out along the normals by ~0.02–0.04 units, in solid near-black. Test this on frames before rendering.
+- **Semi-realistic people**: proportional adult figures with simple faces (eyes, brows, nose and mouth lines), hair, and period clothing in flat colours. Not blocky mannequins, and not chibi/cartoon.
+- **Simple, readable 3D sets**: clean houses, streets, rooms, ships, fields. Few props, but each one meaningful. **Bright, even daylight or well-lit interiors**; dusk/night scenes still keep subjects clearly lit.
+- **Highlight the subject**: when a person or object is introduced or is the focus, render it as a **glowing red/orange silhouette** (emissive red, brighter rim, soft glow halo) while the rest of the scene stays normal, so the viewer instantly knows who/what the narration is about.
+- **Mugshot / lineup shots** for introducing key people: the figure standing front-on in front of a height-chart wall (horizontal lines with height marks), the camera slowly pushing in.
+- **Persistent "CASE FILE" header** (top-left, the whole video, kept below TikTok's top ~140 px so the search bar doesn't cover it): a red vertical bar + a dark translucent strip, `CASE FILE: <SUBJECT>` in a typewriter font (Courier Prime / DejaVu Sans Mono Bold), and a smaller subline `<PLACE> · <YEAR>`.
+- **Running tally box** (upper-middle, under the header): a black box with a 4-px red border; a small red, letter-spaced label on top (e.g. `DEATH TOLL · <EVENT>`, `DAYS TRAPPED`, `SURVIVORS`, `DISTANCE`), big white condensed numbers below, and an optional yellow detail line. **Update the numbers as the story escalates** (pop/scale animation + a tick SFX on each change). It's a powerful retention hook; use it whenever the story has a number that grows.
+- **Captions**: huge condensed bold all-caps (font **Anton**, OFL licence: download it once from the google/fonts GitHub repo into `toolkit/fonts/`, never from other sites), white with a thick black outline and a soft shadow, **1–3 words at a time**, word-synced, centred at about **68% of the height** (clear of TikTok's bottom UI and the right-side buttons, max width ~820 px of 1080). Put **one key word per caption in red** (#E3141B): names, numbers, danger words. Add a quick pop-in (scale 1.15 → 1.0 over ~4 frames).
+- **Pacing**: cut or move the camera every 2–4 s; every sentence of narration should have a matching visual action, so a viewer with the sound off can still follow the story.
+- No gore: violence is shown by implication (silhouettes, aftermath, the red highlight), never wounds or blood.
 
 ## Posting schedule (Metricool free plan: about 50 posts/month)
 - Brand blogId **8271048**, network **tiktok**, autoPublish **true**, tiktokData.isAigc **true**, and tiktokData.title is **required**.
