@@ -33,7 +33,7 @@ This is the playbook for the daily scheduled run. Follow it end to end, with no 
 6. Render in 2 parallel halves: `SCENE=... node cap.js full 0 N1 h1.mp4` and `... full N1 N h2.mp4` (30 fps, 720×1280), then concat with `-c copy`.
 7. Final encode: scale to 1080×1920 (lanczos), `vignette=PI/6`, `noise=alls=3:allf=t`, `subtitles=subs.ass`; narration at volume 2.0 with apad, the SFX bed at 0.55, amix normalize=0, alimiter 0.89; libx264 crf 21, maxrate 10M; aac 192k; faststart. Check that the duration is over 61 s.
 8. Copy the MP4 to `videos/<slug>.mp4` in this repo, commit and push (`git -c push.negotiate=true push origin HEAD`). Media URL: `https://raw.githubusercontent.com/fwfurki/Historywithinseconds-videos/main/videos/<slug>.mp4`
-9. Metricool `createScheduledPost` with that URL at the slot. Append the topic, date, slot and post id to `toolkit/topics.md`, then commit and push.
+9. Metricool `createScheduledPost` with that URL at the slot. **Immediately** add the topic to the do-not-repeat table in `toolkit/topics.md` (topic, file, slot, post id), then commit and push **before starting the next video**, so a topic can never be used twice, even if the run stops midway.
 10. End with a short summary: topics, slots, credits left, and any issues.
 
 ## Rendering environment notes
