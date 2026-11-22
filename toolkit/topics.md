@@ -11,6 +11,7 @@ Status: the first six rows are DRAFTS. Never post them; the topics are taken any
 | Phineas Gage | phineas_gage.mp4 | 2026-11-24 18:00 | 436880721 |
 | Destruction of Pompeii | pompeii.mp4 | 2026-11-25 12:00 | 436880747 |
 | Hindenburg disaster (test post) | hindenburg.mp4 | 2026-11-21 13:05 | 436883767 |
+| Lake Nyos CO2 disaster (Cameroon, 1986) | lake_nyos.mp4 | 2026-11-22 10:00 UTC | 437160097 |
 
 Also avoid: the Dancing Plague of Strasbourg (owner said no).
 
