@@ -12,44 +12,53 @@ const TORSO=frM(24,.8,1,true),LIMB=frM(16,1,.8,true),SKIRT=frM(28,1,.42,true);
 const SKINS=[[.93,.76,.62],[.78,.56,.4],[.55,.37,.25],[.36,.24,.16]];
 const HAIRS=[[.18,.12,.08],[.08,.06,.05],[.45,.3,.15],[.6,.58,.55]];
 function person(P,o){o=o||{};const sk=o.skin||SKINS[0],hc=o.hair||HAIRS[0],coat=o.coat||[.28,.32,.42],pants=o.pants||[.22,.22,.26],shirt=o.shirt||[.92,.9,.85];
- const bid=nextId(),hid=nextId(),hairId=nextId(),hatId=nextId();const B=withId(P,bid),HD=withId(P,hid);
- const w=o.walk||0,ph=o.phase||0;const sw=Math.sin(ph)*w;
- // legs
- const sitting=o.sit;
+ const bid=nextId(),hid=nextId(),hairId=nextId(),hatId=nextId(),legId=nextId();const B=withId(P,bid),HD=withId(P,hid),LG=withId(P,legId);const FX=Object.assign({},HD,{noInk:1});
+ const w=o.walk||0,ph=o.phase||0;const sw=Math.sin(ph)*w;const sitting=o.sit;const dk=c=>mix3(c,[0,0,0],.28);
+ // legs: thigh, knee joint, shin, rounded shoe
  for(const sd of[-1,1]){let hipR=[sd*sw*.55,0,0],kn=Math.max(0,-sd*Math.cos(ph)*w*.7);if(sitting){hipR=[-1.45,0,0];kn=1.5;}
-  const HP=cxf(B,xf([sd*.095,.93,0],hipR));
-  if(o.dress){}else draw(LIMB,{P:HP,p:[0,0,0],r:[Math.PI,0,0],s:[.078,.45,.078],c:pants});
-  const KP=cxf(HP,xf([0,-.45,0],[kn,0,0]));if(!o.dress||sitting)draw(LIMB,{P:KP,r:[Math.PI,0,0],s:[.068,.44,.068],c:o.dress?sk:pants});else draw(CYL,{P:KP,p:[0,-.44,0],s:[.05,.44,.05],c:[.85,.82,.78]});
-  draw(BOX,{P:KP,p:[0,-.46,.05],s:[.1,.08,.25],c:o.shoes||[.12,.09,.07]});}
- // torso
- if(o.dress){draw(SKIRT,{P:B,p:[0,.08,0],s:[.34,.88,.28],c:o.dress});draw(TORSO,{P:B,p:[0,.92,0],s:[.17,.52,.11],c:o.dress});}
- else{draw(TORSO,{P:B,p:[0,.9,0],s:[.19,.54,.12],c:coat});if(o.longcoat)draw(SKIRT,{P:B,p:[0,.45,0],r:[0,0,0],s:[.22,.5,.15],c:coat});
-  draw(BOX,{P:B,p:[0,1.28,.105],r:[-.08,0,0],s:[.1,.26,.03],c:shirt});if(o.tie)draw(BOX,{P:B,p:[0,1.24,.122],s:[.035,.2,.02],c:o.tie});
-  for(const sd of[-1,1])draw(BOX,{P:B,p:[sd*.075,1.3,.115],r:[-.1,0,sd*.35],s:[.05,.22,.025],c:mix3(coat,[0,0,0],.25)});
-  draw(CYL,{P:B,p:[0,.9,0],s:[.158,.07,.1],c:o.belt||mix3(coat,[0,0,0],.4)});draw(SPH,{P:B,p:[0,.92,0],s:[.16,.1,.1],c:pants});}
- if(o.apron)draw(BOX,{P:B,p:[0,.75,.13],s:[.3,.6,.02],c:o.apron});
- // arms
- for(const sd of[-1,1]){const a=(sd<0?o.armL:o.armR)||[-sd*sw*.5*(-1)*-1,0,0];const ar=[a[0],a[1]||0,(a[2]||0)+sd*.1];const el=(sd<0?o.elbowL:o.elbowR)||(w?.35:.12);
-  const SP=cxf(B,xf([sd*.215,1.41,0],ar));draw(SPH,{P:SP,s:[.075,.075,.075],c:o.dress||coat});draw(LIMB,{P:SP,r:[Math.PI,0,0],s:[.06,.3,.06],c:o.dress||coat});
-  const EP=cxf(SP,xf([0,-.3,0],[-el,0,0]));draw(LIMB,{P:EP,r:[Math.PI,0,0],s:[.052,.27,.052],c:o.sleeve||o.dress||coat});draw(SPH,{P:withId(EP,hid),p:[0,-.31,0],s:[.045,.06,.035],c:sk});}
+  const HP=cxf(LG,xf([sd*.092,.93,0],hipR));const legC=o.dress&&!sitting?[.85,.82,.78]:pants;
+  if(!o.dress)draw(LIMB,{P:HP,r:[Math.PI,0,0],s:[.083,.45,.083],c:pants});
+  const KP=cxf(HP,xf([0,-.45,0],[kn,0,0]));if(!o.dress||sitting){draw(SPH,{P:KP,s:[.062,.062,.062],c:o.dress?sk:pants});draw(LIMB,{P:KP,r:[Math.PI,0,0],s:[.066,.43,.066],c:o.dress?sk:pants});}else draw(CYL,{P:KP,p:[0,-.44,0],s:[.045,.44,.045],c:legC});
+  const SH=o.shoes||[.13,.1,.08];draw(SPH,{P:KP,p:[0,-.445,.045],s:[.058,.05,.125],c:SH});draw(BOX,{P:KP,p:[0,-.49,.045],s:[.11,.022,.25],c:dk(SH)});}
+ // torso: rounded chest + waist + hips
+ const TC=o.dress||coat;
+ if(o.dress){draw(SKIRT,{P:B,p:[0,.06,0],s:[.34,.9,.28],c:o.dress});draw(TORSO,{P:B,p:[0,.92,0],s:[.16,.43,.1],c:o.dress});draw(SPH,{P:B,p:[0,1.35,0],s:[.158,.075,.098],c:o.dress});}
+ else{draw(TORSO,{P:B,p:[0,.9,0],s:[.18,.45,.115],c:coat});draw(SPH,{P:B,p:[0,1.35,0],s:[.178,.085,.112],c:coat});draw(CYL,{P:LG,p:[0,.78,0],s:[.14,.14,.092],c:pants});
+  if(o.longcoat)draw(SKIRT,{P:B,p:[0,.42,0],s:[.21,.56,.15],c:coat});
+  draw(BOX,{P:Object.assign({},B,{noInk:1}),p:[0,1.3,.112],r:[-.12,0,0],s:[.085,.2,.02],c:shirt});if(o.tie)draw(BOX,{P:Object.assign({},B,{noInk:1}),p:[0,1.27,.124],r:[-.12,0,0],s:[.03,.17,.012],c:o.tie});
+  for(const sd of[-1,1])draw(BOX,{P:B,p:[sd*.07,1.31,.118],r:[-.14,0,sd*.38],s:[.05,.22,.02],c:dk(coat)});
+  for(let k=0;k<3;k++)draw(SPH,{P:Object.assign({},B,{noInk:1}),p:[.035,1.12-k*.09,.122],s:[.011,.011,.006],c:[.85,.75,.4]});
+  draw(CYL,{P:B,p:[0,.88,0],s:[.163,.05,.108],c:o.belt||dk(coat)});}
+ if(o.apron)draw(BOX,{P:B,p:[0,.75,.125],s:[.3,.62,.02],c:o.apron});
+ // arms: shoulder, upper arm, elbow, forearm, hand + thumb
+ for(const sd of[-1,1]){const a=(sd<0?o.armL:o.armR)||[-sd*sw*.5,0,0];const ar=[a[0],a[1]||0,(a[2]||0)+sd*.1];const el=(sd<0?o.elbowL:o.elbowR)||(w?.35:.12);
+  const SP=cxf(B,xf([sd*.19,1.38,0],ar));draw(SPH,{P:SP,s:[.055,.057,.055],c:TC});draw(LIMB,{P:SP,r:[Math.PI,0,0],s:[.058,.3,.058],c:TC});
+  const EP=cxf(SP,xf([0,-.3,0],[-el,0,0]));draw(SPH,{P:EP,s:[.047,.047,.047],c:TC});draw(LIMB,{P:EP,r:[Math.PI,0,0],s:[.05,.26,.05],c:o.sleeve||TC});
+  draw(CYL,{P:EP,p:[0,-.27,0],s:[.042,.03,.042],c:o.cuff||dk(o.sleeve||TC)});
+  const HP2=withId(EP,hid);draw(SPH,{P:HP2,p:[0,-.33,0],s:[.04,.058,.026],c:sk});draw(SPH,{P:HP2,p:[sd*-.03,-.31,.015],r:[0,0,sd*.5],s:[.014,.03,.014],c:sk});}
  // neck + head
- const HR=o.head||[0,0,0];draw(CYL,{P:HD,p:[0,1.42,0],s:[.05,.12,.05],c:sk});
- const HP=cxf(HD,xf([0,1.62,0],HR));
- draw(SPH,{P:HP,s:[.1,.122,.112],c:sk});draw(SPH,{P:HP,p:[0,-.07,.025],s:[.078,.06,.08],c:sk});
- for(const sd of[-1,1]){draw(SPH,{P:HP,p:[sd*.038,.012,.096],s:[.019,.014,.01],c:[.98,.98,.96]});draw(SPH,{P:HP,p:[sd*.038,.012,.104],s:[.009,.01,.005],c:o.eyes||[.12,.09,.07]});
-  draw(BOX,{P:HP,p:[sd*.04,.042,.1],r:[0,0,sd*(o.worry?-.25:.08)],s:[.038,.008,.01],c:mix3(hc,[0,0,0],.3)});draw(SPH,{P:HP,p:[sd*.1,0,0],s:[.018,.032,.024],c:mix3(sk,[0,0,0],.08)});}
- draw(CONE,{P:HP,p:[0,-.005,.105],r:[1.35,0,0],s:[.018,.04,.016],c:mix3(sk,[.6,.3,.25],.12)});
- draw(BOX,{P:HP,p:[0,-.058,.1],s:o.mouthO?[.022,.018,.008]:[.036,.006,.008],c:[.42,.16,.14]});
- if(o.beard)draw(SPH,{P:withId(HP,hairId),p:[0,-.08,.04],s:[.085,.07,.08],c:hc});
- if(o.moustache)draw(BOX,{P:withId(HP,hairId),p:[0,-.04,.103],s:[.05,.012,.012],c:hc});
+ const HR=o.head||[0,0,0];draw(CYL,{P:HD,p:[0,1.4,0],s:[.048,.12,.046],c:sk});
+ const HP=cxf(HD,xf([0,1.615,0],HR));const FP=cxf(FX,xf([0,1.615,0],HR));
+ draw(SPH,{P:HP,s:[.098,.118,.108],c:sk});draw(SPH,{P:FP,p:[0,-.05,.012],s:[.072,.06,.074],c:sk});
+ const ec=o.eyes||[.32,.2,.12];
+ for(const sd of[-1,1]){const ex=sd*.037;draw(SPH,{P:FP,p:[ex,.008,.094],s:[.02,.0145,.009],c:[.98,.97,.95]});draw(SPH,{P:FP,p:[ex,.008,.1],s:[.0105,.0115,.005],c:ec});draw(SPH,{P:FP,p:[ex,.008,.1035],s:[.0055,.006,.003],c:[.04,.03,.03]});
+  draw(SPH,{P:FP,p:[ex+.004,.012,.105],s:[.0025,.0025,.0015],c:[1,1,1],u:1});
+  draw(SPH,{P:FP,p:[ex,.018,.092],s:[.022,.009,.012],c:mix3(sk,[0,0,0],.06)});
+  draw(BOX,{P:FP,p:[sd*.039,.038,.099],r:[0,0,sd*(o.worry?-.28:.1)],s:[.036,.007,.008],c:mix3(hc,[0,0,0],.35)});
+  draw(SPH,{P:HP,p:[sd*.098,-.005,-.004],s:[.016,.03,.022],c:mix3(sk,[.5,.25,.2],.1)});}
+ draw(CONE,{P:FP,p:[0,-.012,.1],r:[1.3,0,0],s:[.016,.036,.016],c:mix3(sk,[.6,.3,.25],.1)});draw(SPH,{P:FP,p:[0,-.032,.111],s:[.012,.01,.01],c:mix3(sk,[.6,.3,.25],.12)});
+ draw(SPH,{P:FP,p:[0,-.06,.098],s:o.mouthO?[.014,.012,.006]:[.022,.0055,.006],c:[.55,.24,.22]});draw(SPH,{P:FP,p:[0,-.066,.096],s:[.018,.005,.006],c:mix3(sk,[.6,.25,.25],.25)});
+ if(o.beard)draw(SPH,{P:withId(HP,hairId),p:[0,-.075,.035],s:[.082,.068,.08],c:hc});
+ if(o.moustache)draw(SPH,{P:withId(HP,hairId),p:[0,-.045,.1],s:[.03,.009,.012],c:hc});
  const HH=withId(HP,hairId);const hs=o.hairStyle||'short';
- if(hs!=='bald'){draw(SPH,{P:HH,p:[0,.03,-.012],s:[.106,.112,.114],c:hc,r:[-.25,0,0]});
-  if(hs==='long'){draw(BOX,{P:HH,p:[0,-.08,-.07],s:[.2,.22,.06],c:hc});}
-  if(hs==='bun'){draw(SPH,{P:HH,p:[0,.05,-.12],s:[.055,.055,.055],c:hc});}}
+ if(hs!=='bald'){draw(SPH,{P:HH,p:[0,.03,-.014],r:[-.22,0,0],s:[.104,.11,.113],c:hc});draw(SPH,{P:HH,p:[0,.075,.06],r:[.5,0,0],s:[.085,.03,.05],c:hc});
+  if(!o.dress)for(const sd of[-1,1])draw(BOX,{P:HH,p:[sd*.093,.02,.03],s:[.016,.04,.035],c:hc});
+  if(hs==='long')draw(SPH,{P:HH,p:[0,-.07,-.06],s:[.11,.17,.07],c:hc});
+  if(hs==='bun')draw(SPH,{P:HH,p:[0,.06,-.12],s:[.052,.052,.052],c:hc});}
  const HT=withId(HP,hatId);const hat=o.hat||'none';const hcl=o.hatc||[.2,.18,.16];
- if(hat==='cap'){draw(CYL,{P:HT,p:[0,.06,0],s:[.115,.06,.12],c:hcl});draw(BOX,{P:HT,p:[0,.07,.11],r:[.15,0,0],s:[.18,.015,.08],c:hcl});}
- if(hat==='flat'){draw(CYL,{P:HT,p:[0,.07,.01],s:[.12,.05,.125],c:hcl});draw(CYL,{P:HT,p:[0,.11,.03],r:[.12,0,0],s:[.13,.02,.14],c:hcl});}
- if(hat==='bowler'){draw(CYL,{P:HT,p:[0,.075,0],s:[.17,.012,.17],c:hcl});draw(SPH,{P:HT,p:[0,.09,0],s:[.11,.09,.115],c:hcl});}
+ if(hat==='cap'){draw(SPH,{P:HT,p:[0,.06,0],s:[.112,.07,.118],c:hcl});draw(BOX,{P:HT,p:[0,.065,.11],r:[.18,0,0],s:[.17,.014,.08],c:hcl});}
+ if(hat==='flat'){draw(SPH,{P:HT,p:[0,.07,.01],s:[.12,.06,.125],c:hcl});draw(CYL,{P:HT,p:[0,.08,.035],r:[.14,0,0],s:[.13,.02,.14],c:hcl});}
+ if(hat==='bowler'){draw(CYL,{P:HT,p:[0,.07,0],s:[.165,.012,.165],c:hcl});draw(SPH,{P:HT,p:[0,.085,0],s:[.108,.09,.112],c:hcl});draw(CYL,{P:HT,p:[0,.075,0],s:[.11,.025,.114],c:[.12,.1,.1]});}
  if(hat==='naval'){draw(CYL,{P:HT,p:[0,.06,0],s:[.115,.06,.12],c:[.95,.95,.95]});draw(CYL,{P:HT,p:[0,.05,0],s:[.118,.025,.123],c:[.1,.1,.15]});draw(BOX,{P:HT,p:[0,.07,.11],r:[.2,0,0],s:[.15,.012,.07],c:[.08,.08,.08]});}
  if(hat==='wrap'){draw(SPH,{P:HT,p:[0,.06,-.01],s:[.12,.09,.125],c:hcl});draw(SPH,{P:HT,p:[.03,.1,-.02],s:[.09,.06,.09],c:hcl});}
  if(hat==='fez'){draw(FR,{P:HT,p:[0,.06,0],s:[.09,.1,.09],c:hcl});}}

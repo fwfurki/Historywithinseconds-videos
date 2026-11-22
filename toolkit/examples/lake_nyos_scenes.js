@@ -136,7 +136,7 @@ function overlays(T,fn,lt){
  if(fn===sArchive){archiveCard([['LAKE NYOS · 1986'],'By morning, the blue lake','had turned a murky red.'],74.1,T);outro(76.7,T);}
  subtitle(T,SUBS);}
 window.renderFrame=function(i){const T=i/30;let k=S.length-1;for(let j=0;j<S.length;j++)if(T<S[j][1]){k=j;break;}const[s0,s1,fn]=S[k];
- PULSE=.5+.5*Math.sin(T*3);cx.clearRect(0,0,W,H);fn(T-s0);post();cx.drawImage(gl.canvas,0,0);
+ PULSE=.5+.5*Math.sin(T*3);TIME=T;cx.clearRect(0,0,W,H);renderScene(fn,T-s0);cx.drawImage(gl.canvas,0,0);
  // cut transitions: quick dip at cuts
  const lt=T-s0;let a=0;if(k>0)a=Math.max(a,(1-lt/.18)*.55);if(T<.2)a=1-T/.2;dark(a);
  if(fn===sErupt&&lt>.2&&lt<.6)flash((1-(lt-.2)/.4)*.5);

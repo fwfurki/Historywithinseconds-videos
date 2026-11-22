@@ -189,7 +189,7 @@ function overlays(T,fn,lt){
  if(fn===sArchive){archiveCard([['HALIFAX · 1917'],'Every year, Nova Scotia still','sends Boston a Christmas tree','to say thank you.'],75.3,T);outro(77.6,T);}
  subtitle(T,SUBS);}
 window.renderFrame=function(i){const T=i/30;let k=S.length-1;for(let j=0;j<S.length;j++)if(T<S[j][1]){k=j;break;}const[s0,s1,fn]=S[k];
- PULSE=.5+.5*Math.sin(T*3);cx.clearRect(0,0,W,H);fn(T-s0);post();cx.drawImage(gl.canvas,0,0);
+ PULSE=.5+.5*Math.sin(T*3);TIME=T;cx.clearRect(0,0,W,H);renderScene(fn,T-s0);cx.drawImage(gl.canvas,0,0);
  const lt=T-s0;let a=0;if(k>0)a=Math.max(a,(1-lt/.18)*.55);if(T<.2)a=1-T/.2;dark(a);
  if(fn===sBlast&&lt>.25&&lt<.9)flash((1-(lt-.25)/.65)*.95);
  overlays(T,fn,lt);

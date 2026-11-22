@@ -40,4 +40,6 @@ Also avoid: the Dancing Plague of Strasbourg (owner said no).
 
 Also avoid: Lake Monoun (1984, covered inside the Lake Nyos video).
 
+Account-safety note: don't make new videos about recent violent events (e.g. anything like the Charlie Kirk assassination, roughly the last 25 years), assassinations of living-memory figures, suicides, or harm to children. See "Account safety" in PIPELINE.md.
+
 Also avoid topics too close to these (for example, another video on the same person or event from a different angle).
