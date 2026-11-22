@@ -55,7 +55,7 @@ function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const a
   U(SD.rc(x,y,z,[0,1.632,.09],[0,1.592,.11],.008,.0115),1,.012);U(SD.ell(x,y,z,[0,1.59,.101],[.017,.011,.014]),1,.008);
   for(const sd of[-1,1]){const d=SD.sph(x,y,z,[sd*.034,1.632,.094],.019);best=SD.smax(best,-d,.008);}
   // hair
-  if(hs!=='bald'){const ang=Math.atan2(x,z);const gro=.0022*Math.sin(ang*38+y*25)+.0018*vnoise3(x*60,y*12,z*60);const hd=Math.max(SD.ell(x,y,z,[0,1.649,-.012],[.096*hk,.106*hk,.108*hk])+gro,(1.69-1.25*Math.max(0,.02-z))-y+.004*Math.sin(x*90));U(hd,6,.006);
+  if(hs!=='bald'){if(!F&&hs==='short')U(SD.ell(x,y,z,[.022,1.72,.022],[.07,.03,.07]),6,.03);const ang=Math.atan2(x,z);const gro=.0022*Math.sin(ang*38+y*25)+.0018*vnoise3(x*60,y*12,z*60);const hd=Math.max(SD.ell(x,y,z,[0,1.649,-.012],[.096*hk,.106*hk,.108*hk])+gro,(1.69-1.25*Math.max(0,.02-z))-y+.004*Math.sin(x*90));U(hd,6,.006);
    if(hs==='bun')U(SD.sph(x,y,z,[0,1.665,-.112],.045),6,.02);
    if(hs==='long')U(SD.ell(x,y,z,[0,1.55,-.07],[.1,.15,.055]),6,.03);}
   // arms (part 2), hands (3)

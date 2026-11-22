@@ -65,7 +65,7 @@ void main(){
     if(mp.z>.5&&q.z>0.&&q.y>1.33&&q.y<1.4&&abs(q.x)>.012&&abs(q.x)<.06&&(q.y-1.33)>(abs(q.x)-.012)*.9)base=mc[2]*.97;
     if(mp.z>.5&&q.z>0.&&q.y>1.16&&q.y<coll){float ed=abs(abs(q.x)-((q.y-1.16)*.3+.008));base=mix(base,mc[1]*.75,smoothstep(.008,.0,ed)*.8);}
     if(mp.w<.75&&mp.z>.5&&q.z>.05&&q.y<1.1&&q.y>.97){float bt=smoothstep(.009,.004,length(vec2(q.x-.01,mod(q.y-.97,.065)-.032)));base=mix(base,vec3(.85,.75,.45),bt);}}}
-  base=mix(base,mc[5],smoothstep(.35,.65,vH));}
+  {float hl=1.69-1.25*max(0.,.02-q.z);float hm2=q.z>-.02?smoothstep(-.002,.002,q.y-hl):1.;base=mix(base,mc[5],smoothstep(.12,.4,vH)*hm2);}}
 #endif
 #if TEX==1
  {vec4 tx=texture(tex,vec2(vO.x+.5,.5-vO.y));base=mix(base,tx.rgb,tx.a);}

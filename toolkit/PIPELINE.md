@@ -111,6 +111,7 @@ The owner wants everything to look smooth and high quality, like the smooth semi
 - If the playwright path or fonts differ in the new workspace, adapt `cap.js`. The fonts used are Montserrat (labels and subtitles) and DejaVu Serif (quotes).
 
 ## MAXIMUM QUALITY MODE (owner's standing request, overrides speed)
+**Render time with engine v5:** about 2–2.5 h per video with 2 render processes. **Order of work:** finish, check and schedule the 10:00 UTC video first (by 08:00 UTC). The second video (18:00 UTC slot) can keep being built and rendered after that, as long as it is uploaded and scheduled at least 3 hours before its slot (by 15:00 UTC); keep the same quality checks. Never let the second video delay the first.
 **Time budget (owner, Nov 22 2026):** use as much of the night as the best graphics need, but keep at least **2 hours of spare time** before the first slot for roadblocks. The run starts at 22:54 UTC and the first slot is 10:00 UTC, so both videos must be uploaded and scheduled by **08:00 UTC** at the latest (aim to finish rendering by ~07:00). If the first video can't be ready by then, schedule it in the next free slot instead of rushing it (and never fill a slot less than 3 hours away).
 Time is not a constraint: there is no 15–20 minute budget. Spend whatever time is needed on each video; quality comes first.
 - **Script:** draft, then rewrite at least once for a sharper 3-second hook, rising suspense, a mid-video twist and a haunting final line. Verify every fact with 2+ sources.
