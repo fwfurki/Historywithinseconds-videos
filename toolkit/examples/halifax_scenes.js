@@ -11,9 +11,9 @@ function hf(x,z){const w=halfW(z);let h;
 let GK='';function terrain(c){if(GK!=='T'){setGrid(-90,90,-90,90,hf);GK='T';}draw(GRID,{c:c||[.52,.66,.4],pat:1,patS:1.2});}
 function water(c){draw(BOX,{p:[0,-.5,0],s:[600,1,600],c:c||[.3,.55,.78],g:.6,pat:5,patS:.45});}
 // city: merged house meshes (Halifax side), destroyed + snow variants
-const CITY=(()=>{let s=5;const r=()=>{s=(s*9301+49297)%233280;return s/233280;};const walls=[[],[],[]],roofs=[[],[]],win=[],rub=[[],[]],chim=[],trim=[];const pos=[];
+const CITY=(()=>{let s=5;const r=()=>{s=(s*9301+49297)%233280;return s/233280;};const walls=[[],[],[]],roofs=[[],[]],win=[],rub=[[],[]],chim=[],trim=[],found=[];const pos=[];
  for(let z=-46;z<=46;z+=4.2)for(let x=-20;x>-60;x-=4.6){if(r()<.18)continue;if(Math.abs(z-6)<3.2)continue;const xx=x+r()*1.2,zz=z+r()*1.2;const y=hf(xx,zz);const w=2.2+r()*.8,d=2.6+r()*.6,h=2+r()*1.4;const ry=0;
-  walls[Math.floor(r()*3)].push({p:[xx,y+h/2,zz],s:[w,h,d]});
+  const ymin=Math.min(hf(xx-w/2,zz-d/2),hf(xx+w/2,zz-d/2),hf(xx-w/2,zz+d/2),hf(xx+w/2,zz+d/2));walls[Math.floor(r()*3)].push({p:[xx,(ymin-1.2+y+h)/2,zz],s:[w,y+h-(ymin-1.2),d]});found.push({p:[xx,(ymin-1.2+y+.35)/2,zz],s:[w+.08,y+.35-(ymin-1.2),d+.08]});
   for(const sd of[-1,1])roofs[Math.floor(r()*2)].push({p:[xx,y+h+.45,zz+sd*d/4],r:[sd*.6,0,0],s:[w+.3,.12,d/2+.55]});
   win.push({p:[xx+w/2+.03,y+h*.6,zz-.5],s:[.04,.5,.4]},{p:[xx+w/2+.03,y+h*.6,zz+.5],s:[.04,.5,.4]},{p:[xx+w/2+.03,y+.55,zz],s:[.04,.9,.45]});
   trim.push({p:[xx+w/2+.015,y+h*.6,zz-.5],s:[.04,.62,.52]},{p:[xx+w/2+.015,y+h*.6,zz+.5],s:[.04,.62,.52]},{p:[xx+w/2+.015,y+.6,zz],s:[.04,1.02,.57]},{p:[xx+w/2+.06,y+h*.6-.3,zz-.5],s:[.1,.05,.56]},{p:[xx+w/2+.06,y+h*.6-.3,zz+.5],s:[.1,.05,.56]});
@@ -21,13 +21,13 @@ const CITY=(()=>{let s=5;const r=()=>{s=(s*9301+49297)%233280;return s/233280;};
   pos.push([xx,y,zz,w,h,d]);
   for(let k=0;k<3;k++)rub[0].push({p:[xx+(r()-.5)*w,y+.35+r()*.3,zz+(r()-.5)*d],r:[r()*.5,r()*3,r()*.5],s:[.14,.14,1.6+r()*1.2]});
   if(r()<.55)rub[1].push({p:[xx+(r()<.5?-1:1)*w*.4,y+.5+r()*.5,zz],r:[0,0,(r()-.5)*.3],s:[.2,1+r()*1.4,d*(.4+r()*.5)]});}
- return{walls:walls.map(merge),roofs:roofs.map(merge),win:merge(win),trim:merge(trim),chim:merge(chim),rub:rub.map(merge),pos};})();
+ return{walls:walls.map(merge),roofs:roofs.map(merge),win:merge(win),trim:merge(trim),found:merge(found),chim:merge(chim),rub:rub.map(merge),pos};})();
 const WALLC=[[.86,.8,.68],[.72,.5,.38],[.62,.68,.74]],ROOFC=[[.38,.3,.28],[.3,.34,.4]];
 function city(o){o=o||{};const sn=o.snow||0;const T=c=>mix3(c,[.95,.96,.98],sn);
- if(!(o.ruin>=1)){CITY.walls.forEach((m,i)=>draw(m,{c:T(WALLC[i]),pat:i==1?3:6,patS:i==1?2.2:1.5}));CITY.roofs.forEach((m,i)=>draw(m,{c:T(ROOFC[i]),pat:4,patS:2.6}));draw(CITY.win,{c:[.18,.2,.26],g:.8});draw(CITY.trim,{c:T([.93,.92,.88])});draw(CITY.chim,{c:T([.55,.3,.25]),pat:3,patS:3});}
+ if(!(o.ruin>=1)){CITY.walls.forEach((m,i)=>draw(m,{c:T(WALLC[i]),pat:i==1?3:6,patS:i==1?2.2:1.5}));CITY.roofs.forEach((m,i)=>draw(m,{c:T(ROOFC[i]),pat:4,patS:2.6}));draw(CITY.win,{c:[.18,.2,.26],g:.8});draw(CITY.found,{c:T([.5,.48,.45]),pat:6,patS:3});draw(CITY.trim,{c:T([.93,.92,.88])});draw(CITY.chim,{c:T([.55,.3,.25]),pat:3,patS:3});}
  else{const PM=propMesh('rubblePile',(x,y,z)=>Math.max(SD.ell(x,y,z,[0,0,0],[1.4,.55,1.6])+.18*vnoise3(x*2.5,y*2.5,z*2.5)+.08*vnoise3(x*7,y*7,z*7)-.1,-y),[-1.8,-.05,-2],[1.8,.9,2],.06);
  CITY.pos.forEach(([x,y,z],i)=>draw(PM,{p:[x,y-.05,z],r:[0,i*1.7,0],c:T(i%3?[.48,.4,.34]:[.36,.32,.3]),pat:7,patS:1.5}));draw(CITY.rub[0],{c:T([.16,.12,.1])});draw(CITY.rub[1],{c:T([.66,.58,.48]),pat:3,patS:2});}}
-const DART=(()=>{const L=[],R=[],Wn=[],Tr=[];for(let i=0;i<26;i++){const z=-44+i*3.6,x=16+(i%4)*5;const y=hf(x,z);const h=2+(i%3)*.5;L.push({p:[x,y+h/2,z],s:[2.2,h,2.6]});for(const sd of[-1,1])R.push({p:[x,y+h+.42,z+sd*.65],r:[sd*.6,0,0],s:[2.5,.12,1.85]});
+const DART=(()=>{const L=[],R=[],Wn=[],Tr=[];for(let i=0;i<26;i++){const z=-44+i*3.6,x=16+(i%4)*5;const y=hf(x,z);const h=2+(i%3)*.5;const ym=Math.min(hf(x-1.1,z-1.3),hf(x+1.1,z-1.3),hf(x-1.1,z+1.3),hf(x+1.1,z+1.3))-1.2;L.push({p:[x,(ym+y+h)/2,z],s:[2.2,y+h-ym,2.6]});for(const sd of[-1,1])R.push({p:[x,y+h+.42,z+sd*.65],r:[sd*.6,0,0],s:[2.5,.12,1.85]});
  for(const dz of[-.6,.6]){Wn.push({p:[x-1.13,y+h*.62,z+dz],s:[.04,.45,.38]});Tr.push({p:[x-1.115,y+h*.62,z+dz],s:[.04,.57,.5]});}}return{w:merge(L),r:merge(R),wn:merge(Wn),tr:merge(Tr)};})();
 const PIERS=(()=>{const L=[];for(let i=-3;i<=3;i++){const z=i*11;const w=halfW(z);L.push({p:[-w+3.5,.35,z],s:[8,.5,2.4]});for(let k=0;k<6;k++)L.push({p:[-w+.5+k*1.4,-.6,z+1.1],s:[.25,2,.25]},{p:[-w+.5+k*1.4,-.6,z-1.1],s:[.25,2,.25]});}return merge(L);})();
 const RAIL=(()=>{const L=[];for(let z=-80;z<80;z+=.8)L.push({p:[-halfW(z)-3.2,hf(-halfW(z)-3.2,z)+.08,z],s:[1.6,.08,.22]});return merge(L);})();

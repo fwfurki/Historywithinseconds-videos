@@ -41,12 +41,10 @@ function segD(x,y,z,s){const a=s[0],b=s[1];const bx=b[0]-a[0],by=b[1]-a[1],bz=b[
 function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const ar=F?.9:1,lr=F?.93:1;
  const S=[[-sh,1.41,0],[-.225*sh/.19,1.125,-.01],[-.25*sh/.19+.005*F,.87,.005],[-.262*sh/.19+.005*F,.76,.015]];
  return function(x,y,z,wantPart){let best=1e9,part=0;const U=(d,p,k)=>{if(k){const nb=SD.smin(best,d,k);if(d<best)part=p;best=nb;}else if(d<best){best=d;part=p;}};
-  // torso
-  U(SD.ell(x,y,z,[0,1.275,-.005],F?[.15,.15,.1]:[.165,.155,.105]),0);
-  U(SD.rc(x,y,z,[-sh+.04,1.395,-.01],[sh-.04,1.395,-.01],.065,.065),0,.05);
-  U(SD.ell(x,y,z,[0,1.08,.008],F?[.13,.15,.092]:[.145,.15,.1]),0,.06);
-  U(SD.ell(x,y,z,[0,.93,0],F?[.168,.11,.11]:[.152,.1,.104]),0,.05);
-  if(F){for(const sd of[-1,1])U(SD.ell(x,y,z,[sd*.052,1.27,.062],[.055,.05,.045]),0,.03);}
+  // torso: one smooth tapered elliptical trunk + shoulder yoke (no separate blobs)
+  {const zs=F?1.55:1.5;const tz=z*zs;const tr=SD.rc(x,y,tz,[0,.9,0],[0,1.3,0],F?.158:.15,F?.15:.163)/1.25;U(tr,0);
+   for(const sd of[-1,1])U(SD.rc(x,y,z,[0,1.395,-.012],[sd*(sh-.045),1.36,-.012],.07,.056),0,.1);
+   if(F){for(const sd of[-1,1])U(SD.ell(x,y,z,[sd*.05,1.25,.055],[.05,.045,.04]),0,.04);}}
   // neck + head
   U(SD.rc(x,y,z,[0,1.37,-.008],[0,1.54,0],.053*(F?.92:1),.047*(F?.92:1)),1,.03);
   const hk=F?.96:1;U(SD.ell(x,y,z,[0,1.625,.004],[.088*hk,.11*hk,.1*hk]),1,.02);
@@ -74,7 +72,7 @@ function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const a
    const fd=Math.max(SD.smin(SD.rc(x,y,z,[sd*.098,.06,-.03],[sd*.098,.04,.12],.04,.032),SD.ell(x,y,z,[sd*.098,.05,-.025],[.038,.045,.05]),.02),-y);U(fd,5,.02);}
   // skirt (7)
   if(dr)U(Math.max(SD.rc(x,y,z,[0,.99,0],[0,.08,0],.142,.33),.06-y),7,.03);
-  if(!wantPart&&(part===0||part===2||part===4||part===7)&&Math.abs(best)<.02&&y<1.42)best+=part===7?(.0045*Math.sin(Math.atan2(x,z)*15+vnoise3(x*4,y*3,z*4)*4)*(1.1-y)):(vnoise3(x*22,y*7,z*22)-.5)*.005;
+  if(!wantPart&&part===7&&Math.abs(best)<.02&&y<1.42)best+=part===7?(.0045*Math.sin(Math.atan2(x,z)*15+vnoise3(x*4,y*3,z*4)*4)*(1.1-y)):(vnoise3(x*22,y*7,z*22)-.5)*.005;
   return wantPart?part:best;};}
 const BODY_CACHE=new Map();
 function bodyMesh(v){const key=(v.f?'f':'m')+v.hair+(v.dress?'d':'');let m=BODY_CACHE.get(key);if(m)return m;
@@ -131,10 +129,10 @@ function person(P,o){o=o||{};const sk=o.skin||SKINS[0],hc=o.hair||HAIRS[0],coat=
  if(o.sleeve)mats.set(o.sleeve,6);
  draw(m,{P:PP,c:[1,1,1],bones:BN,mats,mp,g:.15});
  // face details on head bone
- const HB=boneXF(PP,BN,3);const FX=Object.assign({},HB,{noInk:1,noShadow:1});const ec=o.eyes||[.32,.2,.12];const blink=((tt*.37+(o.seed||0)*.13)%1)<.025?1:0;
- for(const sd of[-1,1]){const ex=sd*.034;draw(SPH,{P:FX,p:[ex,1.632,.086],s:[.0165,.0165,.0165],c:[.97,.96,.94]});
-  if(!blink){draw(SPH,{P:FX,p:[ex,1.632,.0985],s:[.0085,.0085,.005],c:ec});draw(SPH,{P:FX,p:[ex,1.632,.1025],s:[.0045,.0045,.0025],c:[.03,.02,.02]});draw(SPH,{P:FX,p:[ex+.003,1.6355,.1045],s:[.0018,.0018,.001],c:[1,1,1],u:1});}
-  draw(SPH,{P:FX,p:[ex,1.6405+(blink?-.007:0),.0895],r:[blink?.6:-.25,0,0],s:[.0185,.0095,.0165],c:mix3(sk,[0,0,0],.08)});
+ const HB=boneXF(PP,BN,3);const FX=Object.assign({},HB,{noInk:1,noShadow:1});const ec=o.eyes||[.32,.2,.12];const blink=((tt*.37+.5+(o.seed||0)*.13)%1)<.025?1:0;
+ for(const sd of[-1,1]){const ex=sd*.034;draw(SPH,{P:FX,p:[ex,1.632,.0845],s:[.0148,.0148,.0148],c:blink?mix3(sk,[0,0,0],.08):[.95,.94,.92]});
+  if(!blink){draw(SPH,{P:FX,p:[ex,1.631,.0955],s:[.0082,.0082,.0045],c:ec});draw(SPH,{P:FX,p:[ex,1.631,.0988],s:[.0042,.0042,.0022],c:[.03,.02,.02]});draw(SPH,{P:FX,p:[ex+.0028,1.6345,.1003],s:[.0016,.0016,.001],c:[1,1,1],u:1});}
+  draw(SPH,{P:FX,p:[ex,1.6395+(blink?-.006:0),.0875],r:[blink?.6:-.25,0,0],s:[.0172,.0092,.0158],c:mix3(sk,[0,0,0],.08)});
   draw(SPH,{P:FX,p:[sd*.037,1.6565,.1005],r:[0,0,sd*(o.worry?-.3:.12)],s:[.021,.0042,.006],c:mix3(hc,[0,0,0],.25)});}
  if(o.mouthO)draw(SPH,{P:FX,p:[0,1.566,.098],s:[.011,.009,.005],c:[.3,.1,.1]});
  const HH=Object.assign({},HB,{id:nextId()});
@@ -206,3 +204,37 @@ function grassField(key,hfn,x0,x1,z0,z1,n,seed){let m=PROP.get('grass'+key);if(!
    P.push(bx-px,y,bz-pz,bx+px,y,bz+pz,tx,y+h,tz);const nn=norm([cx*.3,1,sz*.3]);N.push(...nn,...nn,...nn);I.push(k,k+1,k+2);}}
  m=mesh(P,N,I);PROP.set('grass'+key,m);}return m;}
 function grass(key,hfn,x0,x1,z0,z1,n,c,seed){draw(grassField(key,hfn,x0,x1,z0,z1,n,seed),{c:c||[.42,.62,.3],noInk:1});}
+// ===== reusable detailed structures & decorations (all sit on the ground: foundations go below) =====
+// groundY(hfn,x,z,w,d): lowest terrain point under a footprint (use for anything wider than ~0.5 m)
+const PRISM=(()=>{const P=[],N=[],I=[];const tri=[[-.5,0],[.5,0],[0,1]];for(const zz of[.5,-.5]){const b=P.length/3;tri.forEach(([x,y])=>{P.push(x,y,zz);N.push(0,0,Math.sign(zz));});I.push(b,b+1,b+2);}
+ for(let i=0;i<3;i++){const a=tri[i],c=tri[(i+1)%3];const n=norm([c[1]-a[1],-(c[0]-a[0]),0]);const b=P.length/3;P.push(a[0],a[1],.5,c[0],c[1],.5,c[0],c[1],-.5,a[0],a[1],-.5);for(let k=0;k<4;k++)N.push(...n);I.push(b,b+1,b+2,b,b+2,b+3);}return mesh(P,N,I);})();
+function groundY(hfn,x,z,w,d){if(!hfn)return 0;return Math.min(hfn(x-w/2,z-d/2),hfn(x+w/2,z-d/2),hfn(x-w/2,z+d/2),hfn(x+w/2,z+d/2),hfn(x,z));}
+// house: P at ground centre facing +z. o:{w,d,h,wall,roof,trim,style:'plaster'|'brick'|'wood',door,floors,hfn,x,z}
+function house(P,o){o=o||{};const w=o.w||4,d=o.d||5,h=o.h||(o.floors||1)*2.6+.4,wc=o.wall||[.86,.8,.68],rc=o.roof||[.36,.3,.3],tc=o.trim||[.94,.93,.89];
+ const pat=o.style==='brick'?3:o.style==='wood'?2:6,ps=o.style==='brick'?2.2:o.style==='wood'?2.5:1.5;
+ draw(BOX,{P,p:[0,-1+.2,0],s:[w+.16,2.4,d+.16],c:[.5,.48,.45],pat:6,patS:3});
+ draw(BOX,{P,p:[0,.4+(h-.4)/2,0],s:[w,h-.4,d],c:wc,pat,patS:ps});
+ const rh=Math.min(w,d)*.36;for(const sd of[-1,1])draw(BOX,{P,p:[sd*w/4-sd*.02,h+rh/2-.05,0],r:[0,0,sd*-Math.atan2(rh,w/2)],s:[Math.hypot(w/2,rh)+.38,.14,d+.5],c:rc,pat:4,patS:2.6});
+ draw(BOX,{P,p:[0,h+rh-.04,0],s:[.22,.12,d+.52],c:mix3(rc,[0,0,0],.25)});
+ for(const sd of[-1,1])draw(PRISM,{P,p:[0,h-.02,sd*(d/2-.02)],s:[w,rh,.06],c:wc,pat,patS:ps});
+ draw(BOX,{P,p:[w*.28,h+rh*.6,-d*.15],s:[.42,1.1,.42],c:[.55,.3,.25],pat:3,patS:3});draw(BOX,{P,p:[w*.28,h+rh*.6+.58,-d*.15],s:[.5,.08,.5],c:[.4,.38,.36]});
+ const fl=o.floors||1;for(let f=0;f<fl;f++)for(const xx of[-w*.3,w*.3]){if(f===0&&o.door!==false&&xx>0)continue;const y=1.5+f*2.6;
+  draw(BOX,{P,p:[xx,y,d/2+.03],s:[.72,.98,.06],c:tc});draw(BOX,{P,p:[xx,y,d/2+.05],s:[.56,.82,.04],c:[.2,.26,.34],g:.9});draw(BOX,{P,p:[xx,y,d/2+.075],s:[.04,.82,.03],c:tc});draw(BOX,{P,p:[xx,y,d/2+.075],s:[.56,.04,.03],c:tc});draw(BOX,{P,p:[xx,y-.52,d/2+.1],s:[.8,.07,.14],c:tc});}
+ if(o.door!==false){draw(BOX,{P,p:[w*.3,1.0,d/2+.03],s:[.95,1.75,.06],c:tc});draw(BOX,{P,p:[w*.3,.97,d/2+.06],s:[.78,1.62,.05],c:o.doorC||[.35,.2,.14],pat:2,patS:5});draw(SPH,{P,p:[w*.3+.28,.95,d/2+.1],s:[.035,.035,.035],c:[.85,.7,.3],g:.8});
+  draw(BOX,{P,p:[w*.3,.3,d/2+.35],s:[1.1,.18,.6],c:[.55,.52,.48],pat:6,patS:3});}
+ for(let f=0;f<fl;f++)for(const sd of[-1,1]){const y=1.5+f*2.6;draw(BOX,{P,p:[sd*(w/2+.03),y,0],s:[.06,.98,.72],c:tc});draw(BOX,{P,p:[sd*(w/2+.05),y,0],s:[.04,.82,.56],c:[.2,.26,.34],g:.9});}}
+function fence(P,len,o){o=o||{};const c=o.c||[.82,.78,.7];const n=Math.max(2,Math.round(len/.32));for(let i=0;i<=n;i++){const x=-len/2+i*len/n;draw(BOX,{P,p:[x,.45,0],s:[.07,.9,.035],c,pat:2,patS:6});draw(CONE,{P,p:[x,.9,0],s:[.05,.08,.025],c});}
+ for(const y of[.28,.68])draw(BOX,{P,p:[0,y,-.03],s:[len,.07,.03],c:mix3(c,[0,0,0],.1),pat:2,patS:4});}
+function lamppost(P,on){draw(CYL,{P,p:[0,0,0],s:[.09,.25,.09],c:[.15,.16,.17],g:.5});draw(CYL,{P,p:[0,.25,0],s:[.045,2.7,.045],c:[.15,.16,.17],g:.5});draw(BOX,{P,p:[0,3.0,0],s:[.32,.4,.32],c:on?[1,.85,.5]:[.85,.88,.85],u:on?1:0,g:.6});draw(CONE,{P,p:[0,3.2,0],s:[.26,.22,.26],c:[.15,.16,.17],g:.5});draw(SPH,{P,p:[0,3.45,0],s:[.04,.04,.04],c:[.15,.16,.17]});}
+function crate(P,c){const m=propMesh('crate',(x,y,z)=>{const q=[Math.abs(x)-.27,Math.abs(y-.3)-.27,Math.abs(z)-.27];const o2=Math.hypot(Math.max(q[0],0),Math.max(q[1],0),Math.max(q[2],0))+Math.min(Math.max(q[0],q[1],q[2]),0)-.02;return o2;},[-.36,-.06,-.36],[.36,.66,.36],.02);
+ draw(m,{P,c:c||[.62,.47,.3],pat:2,patS:5});for(const sd of[-1,1])draw(BOX,{P,p:[0,.3,sd*.3],r:[0,0,.78],s:[.7,.06,.025],c:mix3(c||[.62,.47,.3],[0,0,0],.2)});}
+function barrel(P,c){const m=propMesh('barrel',(x,y,z)=>{const r=.27+.045*Math.sin(Math.min(Math.max(y/.85,0),1)*Math.PI);return Math.max(Math.hypot(x,z)-r,Math.abs(y-.425)-.425);},[-.4,-.05,-.4],[.4,.9,.4],.02);
+ draw(m,{P,c:c||[.55,.36,.2],pat:2,patS:7});for(const y of[.12,.32,.53,.73])draw(TUBE,{P,p:[0,y,0],s:[.29+.03*Math.sin(y/.85*Math.PI),.04,.29+.03*Math.sin(y/.85*Math.PI)],c:[.28,.27,.28],g:.6});}
+function cart(P,c){c=c||[.55,.4,.25];draw(BOX,{P,p:[0,.75,0],s:[1.3,.1,2.1],c,pat:2,patS:4});for(const sd of[-1,1]){draw(BOX,{P,p:[sd*.63,.95,0],s:[.06,.35,2.1],c,pat:2,patS:4});draw(BOX,{P,p:[0,.95,sd*1.03],s:[1.3,.35,.06],c,pat:2,patS:4});}
+ for(const sd of[-1,1])for(const zz of[-.6,.6]){const WP=cxf(P,xf([sd*.72,.42,zz],[0,0,Math.PI/2]));draw(TUBE,{P:WP,p:[0,-.04,0],s:[.42,.08,.42],c:[.35,.24,.15]});draw(CYL,{P:WP,p:[0,-.05,0],s:[.07,.1,.07],c:[.25,.2,.15]});for(let k=0;k<8;k++)draw(BOX,{P:WP,r:[0,k*Math.PI/8,0],s:[.03,.03,.8],c:[.4,.28,.18]});}
+ for(const sd of[-1,1])draw(BOX,{P,p:[sd*.35,.7,1.9],r:[-.08,0,0],s:[.06,.06,1.8],c});}
+function bush(P,k,c){const m=propMesh('bush',(x,y,z)=>{let d=1e9;for(let i=0;i<5;i++){const a=i*1.26;d=SD.smin(d,SD.sph(x,y,z,[Math.cos(a)*.28,.32+(i%2)*.12,Math.sin(a)*.28],.32),.12);}return Math.max(d+.08*vnoise3(x*6,y*6,z*6)+.04*vnoise3(x*14,y*14,z*14)-.04,-y);},[-.8,-.05,-.8],[.8,.95,.8],.03);draw(m,{P,s:[k||1,k||1,k||1],c:c||[.3,.52,.24],pat:1,patS:4});}
+function bench(P){for(let i=0;i<3;i++)draw(BOX,{P,p:[0,.45,-.12+i*.13],s:[1.5,.04,.11],c:[.55,.38,.22],pat:2,patS:5});for(let i=0;i<2;i++)draw(BOX,{P,p:[0,.62+i*.14,-.24],r:[-.15,0,0],s:[1.5,.1,.04],c:[.55,.38,.22],pat:2,patS:5});
+ for(const sd of[-1,1]){draw(BOX,{P,p:[sd*.65,.22,0],s:[.06,.44,.36],c:[.18,.18,.2]});draw(BOX,{P,p:[sd*.65,.55,-.25],r:[-.15,0,0],s:[.06,.5,.05],c:[.18,.18,.2]});}}
+function signpost(P,txt){draw(CYL,{P,p:[0,0,0],s:[.05,1.9,.05],c:[.45,.32,.2],pat:2,patS:6});draw(BOX,{P,p:[.35,1.65,0],s:[.9,.3,.05],c:[.6,.45,.28],pat:2,patS:5});}
+function road(x0,z0,x1,z1,w,hfn,c){const dx=x1-x0,dz=z1-z0,L=Math.hypot(dx,dz),n=Math.ceil(L/1.5);for(let i=0;i<n;i++){const t=(i+.5)/n;const x=x0+dx*t,z=z0+dz*t;draw(BOX,{p:[x,(hfn?hfn(x,z):0)+.02,z],r:[0,Math.atan2(dx,dz),0],s:[w,.05,L/n+.05],c:c||[.55,.47,.36],pat:7,patS:1.2,noShadow:1,noInk:1});}}

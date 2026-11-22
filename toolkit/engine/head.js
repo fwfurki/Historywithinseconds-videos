@@ -51,19 +51,19 @@ void main(){
 #if SKIN
  {int pt=int(vP+.5);vec3 q=vO;bool dress=mp.y>.5;
   vec3 cloth=dress?mc[7]:mc[1];
-  if(pt==3){base=mc[0];}
-  else if(pt==2){float t=length(q-vec3(sign(q.x)*.19,1.41,0.));float sl=abs(mp.x);base=t<sl?((mp.x<0.&&t>.3)?mc[2]:cloth):mc[0];if(t<sl&&t>sl-.022)base*=.82;}
+  if(pt==2||pt==3){float t=length(q-vec3(sign(q.x)*.19,1.41,0.));float sl=abs(mp.x);base=t<sl?((mp.x<0.&&t>.3)?mc[2]:cloth):mc[0];if(t<sl&&t>sl-.022)base*=.82;}
   else if(pt==7){base=mc[7];}
   else{ // torso, head/neck, legs, feet: position based (smooth boundaries)
    float coll=1.395+.03*smoothstep(.0,-.08,q.z);float nr=length(vec2(q.x,q.z*1.15));
-   if(q.y>1.47||(q.y>1.37&&nr<.068-max(0.,1.41-q.y)*.3)){base=mc[0];float lip=smoothstep(.026,.018,abs(q.x))*smoothstep(.012,.004,abs(q.y-1.566))*step(.06,q.z);base=mix(base,mix(mc[0],vec3(.62,.25,.24),.55),lip);}
+   if(q.y>1.47||(q.y>1.37&&nr<.068-max(0.,1.41-q.y)*.3)){base=mc[0];float lip=smoothstep(.022,.015,abs(q.x))*smoothstep(.009,.003,abs(q.y-1.566))*step(.06,q.z);base=mix(base,mix(mc[0],vec3(.6,.3,.28),.38),lip);}
    else if(dress&&q.y>.12){base=mc[7];}
    else if(q.y<.105){base=mc[4];}
    else{base=q.y<.905?(dress?mc[0]*.97:mc[3]):cloth;
     if(!dress&&mp.w<.5&&q.y>=.905&&q.y<.955)base=vec3(.16,.11,.08);
     if(mp.w>.5&&q.y>.52&&q.y<.96)base=mc[1];
-    if(mp.z>.5&&q.z>0.&&q.y>1.13&&q.y<coll&&abs(q.x)<(q.y-1.13)*.33+.01){base=mc[2];if(abs(q.x)<.011&&q.y<1.39&&q.y>1.16)base=mc[6];}
-    if(mp.z>.5&&q.z>0.&&q.y>1.13&&q.y<coll){float ed=abs(abs(q.x)-((q.y-1.13)*.33+.01));base=mix(base,mc[1]*.75,smoothstep(.008,.0,ed)*.8);}
+    if(mp.z>.5&&q.z>0.&&q.y>1.16&&q.y<coll&&abs(q.x)<(q.y-1.16)*.3+.008){base=mc[2];float tw=.009+.006*smoothstep(1.36,1.39,q.y);if(abs(q.x)<tw&&q.y<1.395&&q.y>1.18)base=mc[6]*(1.-.15*step(1.37,q.y));}
+    if(mp.z>.5&&q.z>0.&&q.y>1.33&&q.y<1.4&&abs(q.x)>.012&&abs(q.x)<.06&&(q.y-1.33)>(abs(q.x)-.012)*.9)base=mc[2]*.97;
+    if(mp.z>.5&&q.z>0.&&q.y>1.16&&q.y<coll){float ed=abs(abs(q.x)-((q.y-1.16)*.3+.008));base=mix(base,mc[1]*.75,smoothstep(.008,.0,ed)*.8);}
     if(mp.w<.5&&mp.z>.5&&q.z>.05&&q.y<1.1&&q.y>.97){float bt=smoothstep(.009,.004,length(vec2(q.x-.01,mod(q.y-.97,.065)-.032)));base=mix(base,vec3(.85,.75,.45),bt);}}}
   base=mix(base,mc[5],smoothstep(.35,.65,vH));}
 #endif
@@ -78,7 +78,7 @@ void main(){
 #if PAT>0
  {vec3 an=abs(N);vec2 uv=an.y>max(an.x,an.z)?vW.xz:(an.x>an.z?vW.zy:vW.xy);uv*=patS;
 #if PAT==1
-  base*=.86+.2*fbm(uv*.35)+.08*vn(uv*4.);base=mix(base,base*vec3(.82,.9,.75),step(.78,vn(uv*9.)));
+  base*=.74+.3*fbm(uv*.28)+.1*vn(uv*2.6)+.08*vn(uv*11.)+.06*vn(uv*37.);base=mix(base,base*vec3(.9,1.0,.78),smoothstep(.55,.85,fbm(uv*.09+3.))*.5);base=mix(base,base*vec3(1.05,.98,.8),smoothstep(.6,.9,vn(uv*.5))*.25);
 #elif PAT==2
   float pl=floor(uv.y*2.2);float g=sin(uv.x*9.+vn(vec2(uv.x*.7,pl*3.1))*6.);base*=.86+.06*g+.1*h21(vec2(pl,3.));base*=1.-.35*step(fract(uv.y*2.2),.06);
 #elif PAT==3
@@ -86,7 +86,11 @@ void main(){
 #elif PAT==4
   float r=uv.y*4.;float sc=fract(r+.15*sin(uv.x*7.));base*=.78+.26*sc;base*=1.-.3*step(.93,sc);
 #elif PAT==5
-  float w=sin(uv.x*1.1+time*1.4+vn(uv*.3)*4.)+sin(uv.y*1.6-time*1.0+uv.x*.4);base*=.93+.05*w;base=mix(base,vec3(.92,.97,1.),smoothstep(1.55,1.75,w)*.6);wfres=1.;
+  {vec2 p2=vW.xz;float hx=0.,hz=0.;vec2 D[5]=vec2[](vec2(1.,.3),vec2(-.4,1.),vec2(.7,-.8),vec2(-1.,-.2),vec2(.2,.9));float F[5]=float[](.9,1.4,2.3,3.7,5.9);float A[5]=float[](.05,.035,.022,.012,.007);
+   for(int i=0;i<5;i++){vec2 d=normalize(D[i]);float ph=dot(d,p2)*F[i]+time*(1.1+.35*float(i));float c2=cos(ph)*A[i]*F[i];hx+=d.x*c2;hz+=d.y*c2;}
+   float nz=vn(p2*2.5+time*.3)-.5;hx+=nz*.08;hz+=(vn(p2*2.5-time*.27+7.)-.5)*.08;
+   N=normalize(vec3(-hx*1.6,1.,-hz*1.6));base*=.82+.1*vn(p2*.15);
+   float crest=smoothstep(.88,.97,vn(p2*1.3+vec2(time*.15,0.))*vn(p2*3.1-time*.2));base=mix(base,vec3(.9,.95,.98),crest*.35);wfres=1.;}
 #elif PAT==6
   base*=.9+.16*fbm(uv*1.5);
 #elif PAT==8
@@ -111,7 +115,8 @@ void main(){
  c=base*(amb+sunC*lit+plC*pd*at)+sunC*sp;
  float rim=smoothstep(.62,.75,1.-max(dot(N,V),0.))*smoothstep(-.2,.3,d)*.18*(1.-shd);c+=rim*sunC;
 #if PAT==5
- {float fr=pow(1.-max(dot(N,V),0.),3.);c=mix(c,sky*1.15,fr*.45);}
+ {vec3 rf=reflect(-V,N);float fr=.04+.96*pow(1.-max(dot(N,V),0.),5.);vec3 rc=mix(fogC*1.02,sky*1.12+vec3(.03,.05,.08),smoothstep(-.05,.45,rf.y));c=mix(c,rc,clamp(fr*1.15,0.,.85));
+  float gl=pow(max(dot(rf,sunD),0.),160.)*2.2+pow(max(dot(rf,sunD),0.),28.)*.18;c+=sunC*gl*(1.-shd);}
 #endif
 #endif
  c+=emi;
@@ -184,9 +189,8 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i
 float fbm(vec2 p){return .5*vn(p)+.28*vn(p*2.03)+.14*vn(p*4.01)+.08*vn(p*8.1);}
 void main(){vec4 w=iVP*vec4(uv*2.-1.,1.,1.);vec3 rd=normalize(w.xyz/w.w-camP);float el=rd.y;
  vec3 sk=mix(fogC,skyTop,smoothstep(-.02,.45,el));float sg=pow(max(dot(rd,normalize(sunD)),0.),24.);sk+=vec3(1.,.9,.7)*sg*.25;
- vec2 cp=rd.xz/(max(el,0.)+.06)*1.6+vec2(time*.02,0.);float n=fbm(cp*.55);float th=.74-clouds*.26;float k=smoothstep(th,th+.04,n);float k2=smoothstep(th+.08,th+.12,n);
- vec3 cc=mix(cloudC*.86,cloudC,k2);float fadeH=smoothstep(.02,.18,el)*step(.001,clouds);sk=mix(sk,cc,k*fadeH);
- float edge=smoothstep(th-.005,th+.01,n)-smoothstep(th+.01,th+.03,n);sk=mix(sk,sk*.72,edge*fadeH*.8);o=vec4(sk,1.);}`;
+ vec2 cp=rd.xz/(max(el,0.)+.06)*1.6+vec2(time*.02,0.);float n=fbm(cp*.55)+.12*vn(cp*3.1);float th=.8-clouds*.26;float k=smoothstep(th,th+.14,n);float n2=fbm(cp*.55+normalize(sunD.xz)*.18);
+ vec3 cc=mix(cloudC*.8,cloudC*1.04,clamp((n-n2)*4.+.6,0.,1.));float fadeH=smoothstep(.02,.22,el)*step(.001,clouds);sk=mix(sk,cc,k*fadeH*.95);o=vec4(sk,1.);}`;
 const skp=prog(pvs,skfs);const SKU={};['clouds','time','fogC','skyTop','cloudC','camP','sunD','iVP'].forEach(k=>SKU[k]=gl.getUniformLocation(skp,k));
 const SKW=Math.round(W/2),SKH=Math.round(H/2);
 const dfs=`#version 300 es
