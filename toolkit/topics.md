@@ -2,7 +2,7 @@
 
 Status: the first six rows are DRAFTS. Never post them; the topics are taken anyway, so don't make them again.
 
-| Topic | File | Scheduled (ET) | Metricool post id |
+| Topic | File | Scheduled | Metricool post id |
 |---|---|---|---|
 | Great Molasses Flood (1919) | molasses_flood.mp4 | 2026-11-22 12:00 | 436880273 |
 | Shackleton's Antarctic survival | shackleton.mp4 | 2026-11-22 18:00 | 436880657 |
@@ -12,6 +12,7 @@ Status: the first six rows are DRAFTS. Never post them; the topics are taken any
 | Destruction of Pompeii | pompeii.mp4 | 2026-11-25 12:00 | 436880747 |
 | Hindenburg disaster (test post) | hindenburg.mp4 | 2026-11-21 13:05 | 436883767 |
 | Lake Nyos CO2 disaster (Cameroon, 1986) | lake_nyos.mp4 | 2026-11-22 10:00 UTC | 437160097 |
+| Halifax Explosion (Mont-Blanc, 1917) | halifax_explosion.mp4 | 2026-11-22 18:00 UTC | 437170657 |
 
 Also avoid: the Dancing Plague of Strasbourg (owner said no).
 
@@ -36,5 +37,7 @@ Also avoid: the Dancing Plague of Strasbourg (owner said no).
 - The Charlie Kirk assassination
 - The assassination of Julius Caesar
 - The Hindenburg disaster (posted 2026-11-21 as the automation test)
+
+Also avoid: Lake Monoun (1984, covered inside the Lake Nyos video).
 
 Also avoid topics too close to these (for example, another video on the same person or event from a different angle).
