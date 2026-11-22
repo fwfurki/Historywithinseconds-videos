@@ -178,7 +178,7 @@ void main(){vec3 c=texture(cT,uv).rgb;vec4 a=texture(aT,uv);float zr=texture(dT,
  {float hal=0.;for(int r=1;r<=3;r++){float rr=float(r)*9.*rs;for(int i=0;i<8;i++){hal+=texture(aT,uv+o8[i]*px*rr).z;}}hal/=24.;c+=vec3(1.,.71,.18)*hal*(1.-g)*glow*.9;}
 #endif
 #if BLOOM
- {vec3 bl=vec3(0.);for(int r=1;r<=3;r++){float rr=float(r)*7.*rs;for(int i=0;i<8;i++){vec3 cq=texture(cT,uv+o8[i]*px*rr).rgb;float lq=max(cq.r,max(cq.g,cq.b));bl+=cq*smoothstep(.82,1.,lq)/float(r);}}c+=bl*bloomA*.09;}
+ {vec3 bl=vec3(0.);for(int r=1;r<=3;r++){float rr=float(r)*7.*rs;for(int i=0;i<8;i++){vec2 qq=uv+o8[i]*px*rr;vec3 cq=texture(cT,qq).rgb;float em=step(.995,texture(aT,qq).w);bl+=cq*em/float(r);}}c+=bl*bloomA*.09;}
 #endif
  float L=dot(c,vec3(.299,.587,.114));vec3 dc=mix(c,vec3(L)*vec3(1.02,1.,.96),desat*(1.-g));
  dc=mix(dc,vec3(.07,.055,.06),e*.8);
@@ -260,7 +260,7 @@ function draw(m,o){const p=o.p||[0,0,0],s=o.s||[1,1,1],R=rot(o.r||[0,0,0]);
  gl.uniformMatrix4fv(U.M,false,M);gl.uniformMatrix4fv(U.R,false,RR);gl.uniform3f(U.iS,1/s[0],1/s[1],1/s[2]);
  gl.uniform3fv(U.col,o.c||[.5,.5,.5]);gl.uniform3fv(U.emi,o.e||[0,0,0]);gl.uniform1f(U.gloss,o.g||0);
  if(g>0)GOLDUSED=true;gl.uniform1f(U.gold,g);gl.uniform1f(U.patS,o.patS||1);
- const id=o.id!==undefined?o.id:(o.P&&o.P.id!==undefined?o.P.id:nextId());gl.uniform1f(U.oid,id/255);
+ const id=o.id!==undefined?o.id:(o.P&&o.P.id!==undefined?o.P.id:nextId());gl.uniform1f(U.oid,(o.u&&o.glow!==false&&(o.c?Math.max(...o.c):0)>.8)?1:id/255);
  gl.uniform1f(U.alpha,tr?o.a:1);const noInk=o.noInk||(o.P&&o.P.noInk);
  if(tr){gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawBuffers([gl.COLOR_ATTACHMENT0,gl.NONE]);if(o.add)gl.blendFunc(gl.SRC_ALPHA,gl.ONE);}
  else if(noInk)gl.drawBuffers([gl.COLOR_ATTACHMENT0,gl.NONE]);
