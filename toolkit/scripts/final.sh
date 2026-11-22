@@ -1,7 +1,7 @@
 #!/bin/bash
 # final.sh <dir> <END seconds>
 D=$1;END=$2;cd $D
-ffmpeg -y -loglevel error -f concat -safe 0 -i <(printf "file '$D/h1.mp4'\nfile '$D/h2.mp4'\n") -c copy video.mp4
+[ "$SKIPCAT" = 1 ] || ffmpeg -y -loglevel error -f concat -safe 0 -i <(printf "file '$D/h1.mp4'\nfile '$D/h2.mp4'\n") -c copy video.mp4
 ffmpeg -y -loglevel error -i video.mp4 -i narr_f.wav -i music.wav -i sfx.wav -filter_complex \
 "[0:v]vignette=PI/6,format=yuv420p[v];\
 [1:a]aresample=44100,volume=1.0,apad=whole_dur=${END},asplit=3[nv][key][key2];\

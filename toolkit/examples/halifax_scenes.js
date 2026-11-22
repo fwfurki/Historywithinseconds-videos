@@ -99,9 +99,12 @@ function sDrift(t){const T=31.4+t;const p=mbPos(T);env({...DAY,eye:[22,12,22],tg
 function sCrowd(t){const sh=t<1.5?0:t<3.2?1:2;const lt=t-[0,1.5,3.2][sh];const p=mbPos(36);
  if(sh==0){env({...DAY,eye:[lerp(-9,-10,lt),2.6,lerp(11,10,lt)],tgt:[-17,hf(-17,5)+1.2,5],fov:44});harbour();ship(xf(p,[0,Math.PI+.5,0]),{cargo:1});flames(p[0]-.4,1.3,p[2]-2,t,1.4);smoke(p[0]-.4,2.8,p[2]-2,t,1.5);crowd(-15.5,5,10,t,Math.PI/2+.1);}
  if(sh==1){env({...DAY,eye:[lerp(-17,-16.5,lt),hf(-18,6)+1.1,8.2],tgt:[-20,hf(-20,6)+.9,5.5],fov:42});harbour();for(let i=0;i<3;i++)person(xf([-19.5-i*.8,hf(-20,6),5.6+i*.3],[0,Math.PI/2+.5,0],.62),{coat:[[.55,.2,.18],[.25,.4,.6],[.4,.3,.22]][i],hat:'cap',head:[-.15,0,0],...(i==1?POSE.point:{})});}
- if(sh==2){const hx=-21.5,hz=1;env({...DAY,eye:[hx+3.5,hf(hx,hz)+1.9,hz+lerp(1.2,.8,lt)],tgt:[hx+1.1,hf(hx,hz)+1.6,hz],fov:38});harbour();
-  draw(BOX,{p:[hx,hf(hx,hz)+1.6,hz],s:[2,3.2,3.4],c:[.86,.8,.68]});draw(BOX,{p:[hx+1.01,hf(hx,hz)+1.7,hz],s:[.04,1.1,1.6],c:[.2,.24,.32]});draw(BOX,{p:[hx+1.04,hf(hx,hz)+1.7,hz],s:[.04,1.2,.08],c:[.95,.95,.92]});
-  for(let i=0;i<2;i++)person(xf([hx+.75,hf(hx,hz)+.3,hz-.4+i*.75],[0,Math.PI/2,0]),{coat:[[.4,.3,.5],[.3,.3,.3]][i],dress:i==0?[.4,.3,.5]:0,hairStyle:i==0?'bun':'short',head:[-.05,0,0],...(i==1?{armR:[-1.6,0,0],elbowR:1.2}:{})});}}
+ if(sh==2){const hx=-21.5,hz=6,y0=hf(hx,hz);env({...DAY,eye:[hx+5.8,y0+1.9,hz+lerp(1.0,.6,lt)],tgt:[hx+1,y0+1.65,hz],fov:38});harbour();
+  const WC=[.86,.8,.68];draw(BOX,{p:[hx-.3,y0+1.6,hz],s:[1.4,3.2,3.4],c:[.3,.24,.2]});for(const sd of[-1,1])draw(BOX,{p:[hx+.5,y0+1.6,hz+sd*1.65],s:[1.1,3.2,.1],c:WC});draw(BOX,{p:[hx+.5,y0+3.15,hz],s:[1.1,.1,3.4],c:WC});
+  draw(BOX,{p:[hx+1,y0+.55,hz],s:[.1,1.1,3.4],c:WC});draw(BOX,{p:[hx+1,y0+2.75,hz],s:[.1,.9,3.4],c:WC});for(const sd of[-1,1])draw(BOX,{p:[hx+1,y0+1.7,hz+sd*1.25],s:[.1,1.2,.9],c:WC});
+  draw(BOX,{p:[hx+1.02,y0+1.7,hz],s:[.05,1.25,.06],c:[.95,.95,.92]});draw(BOX,{p:[hx+1.02,y0+1.7,hz],s:[.05,.06,1.65],c:[.95,.95,.92]});draw(BOX,{p:[hx+1.08,y0+1.08,hz],s:[.2,.06,1.8],c:[.95,.95,.92]});
+  for(let i=0;i<2;i++)person(xf([hx+.62,y0+.12,hz-.4+i*.8],[0,Math.PI/2,0]),{coat:[[.4,.3,.5],[.3,.3,.3]][i],dress:i==0?[.4,.3,.5]:0,hairStyle:i==0?'bun':'short',hair:HAIRS[i*2],head:[-.05,0,0],...(i==1?{armR:[-1.6,0,0],elbowR:1.2}:{})});
+  draw(BOX,{p:[hx+1,y0+1.7,hz],s:[.03,1.2,1.6],c:[.75,.88,1],a:.22,u:1});}}
 function coleman(P,o){person(P,Object.assign({coat:[.2,.22,.3],sleeve:[.94,.93,.9],shirt:[.94,.93,.9],tie:[.15,.15,.2],moustache:1,hair:HAIRS[0],pants:[.2,.22,.3]},o||{}));}
 function sVince(t){plinth(P=>coleman(P,{}),t,{r:3.6,h:2.3,ty:1.95,pr:.9,ph:.9});}
 function office(t,o){o=o||{};env({sky:[.62,.6,.58],gnd:[.38,.34,.3],sunC:[.5,.47,.42],sunD:[.7,.5,.3],fog:[.3,.27,.25],fogD:.01,eye:o.eye,tgt:o.tgt,fov:o.fov||42,plP:[2.4,2.2,0],plC:[1,.6,.3].map(v=>v*(o.glow||.8)),plR:7,desat:o.desat||0});

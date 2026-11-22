@@ -58,7 +58,7 @@ const PATH=[[0,7,0],[0,9,9],[0,10.5,14],[0,7,22],[0,3.5,32],[0,1.6,42],[0,1.2,52
 function pathAt(u){const n=PATH.length-1;const f=clamp(u,0,1)*n;const i=Math.min(n-1,Math.floor(f));const k=f-i;return mix3(PATH[i],PATH[i+1],k);}
 function cloud(front,t,o){o=o||{};for(let i=0;i<170;i++){const u=(i/170);if(u>front)continue;const p=pathAt(u);const spread=2+u*12;const lx=Math.sin(i*12.9898)*spread,lz=Math.cos(i*7.233)*2.5;
   const x=p[0]+lx+Math.sin(t*.6+i)*.6,z=p[2]+lz;const gy=Math.max(hf(x,z),u<.12?6:-99);const y=gy+.9+Math.abs(Math.sin(i*3.7))*2.2;const rr=(1.8+u*2.2)*(.7+.3*Math.sin(i));const edge=ss(front,front-.06,u);
-  draw(SPHL,{p:[x,y,z],s:[rr,rr*.55,rr],c:o.c||[.78,1,.8],a:.2*edge*(o.a||1),u:1});}}
+  draw(SPHL,{p:[x,y,z],s:[rr,rr*.55,rr],c:o.c||[.78,1,.8],a:.27*edge*(o.a||1),u:1});}}
 // ---- shots ----
 function sGlobe(t){const k=ease(ss(0,2.0,t));env({eye:[0,0,lerp(5.4,3.3,k)],tgt:[0,0,0],fov:40,bg:[.055,.105,.17],fog:[.055,.105,.17],fogD:0,sky:[.9,.9,.95],gnd:[.55,.55,.6],sunC:[.45,.45,.45],sunD:[-.3,.4,.9],ink:.8,inkFar:50});
  globe3D(xf([0,0,0]),LON,LAT,(1-k)*2.6,ss(1.1,1.6,t));for(let i=0;i<80;i++){const a=i*2.39,e=(i*.618)%1;draw(SPHL,{p:[Math.cos(a)*40,(e-.5)*70,-30+Math.sin(a)*10],s:[.08,.08,.08],c:[1,1,1],u:1,id:0});}}
@@ -82,7 +82,7 @@ function sErupt(t){const e=ss(.2,3.5,t);const sh=Math.sin(t*41)*.15*(1-ss(1,4,t)
  const H=e*22;for(let i=0;i<26;i++){const y=6+i/26*H;const r=1.2+Math.sin(i*1.7+t*6)*.3+(i/26)*1.6;draw(SPHL,{p:[Math.sin(i*2.3+t*3)*.5,y,Math.cos(i*1.9)*.5],s:[r,r*1.1,r],c:[.92,.97,1],id:9});}
  for(let i=0;i<20;i++){const ph=(t*.8+i*.05)%1;const a=i*2.4;draw(SPHL,{p:[Math.cos(a)*ph*9,6+H-ph*ph*H*.9,Math.sin(a)*ph*9],s:[.5,.5,.5],c:[.95,.98,1],id:9});}
  if(t>.6)draw(TUBE,{p:[0,6.02,0],s:[2+ss(.6,4,t)*9,.3,2+ss(.6,4,t)*9],c:[.95,.98,1],a:1-ss(2,4.5,t)});}
-function sCloud(t){const f=ease(ss(0,6.4,t));env({...NIGHT,sky:[.5,.54,.72],sunC:[.55,.6,.78],eye:[lerp(34,24,f),lerp(32,17,f),lerp(24,68,f)],tgt:[0,lerp(7,2,f),lerp(8,44,f)],fov:46});stars();terrain();lake({c:[.55,.35,.3]});forest();village({light:1});
+function sCloud(t){const f=ease(ss(0,6.4,t));env({...NIGHT,sky:[.5,.54,.72],sunC:[.55,.6,.78],eye:[lerp(44,34,f),lerp(48,34,f),lerp(34,76,f)],tgt:[0,lerp(6,1,f),lerp(6,40,f)],fov:48});stars();terrain();lake({c:[.55,.35,.3]});forest();village({light:1});
  cloud(lerp(.05,.84,ss(0,6.4,t)),t);}
 function sHomes(t){const k=ss(0,2.8,t);env({...NIGHT,eye:CAMH(lerp(7,5,k),lerp(59,57,k),3.6),tgt:[0,hf(0,47)+.8,46],fov:44});stars();terrain();forest();village({light:1});cloud(.84+k*.16,t+6,{a:.7});
  for(let i=0;i<9;i++){const ph=(t*.35+i*.11)%1;draw(SPHL,{p:[-4+Math.sin(i*3)*5,hf(0,47)+.6,lerp(38,53,ph)],s:[2,.7,2],c:[.78,1,.8],a:.16,u:1});}}
