@@ -24,9 +24,21 @@ function inv4(m){const a=m,o=new Float32Array(16);const b00=a[0]*a[5]-a[1]*a[4],
  o[0]=(a[5]*b11-a[6]*b10+a[7]*b09)*d;o[1]=(a[2]*b10-a[1]*b11-a[3]*b09)*d;o[2]=(a[13]*b05-a[14]*b04+a[15]*b03)*d;o[3]=(a[10]*b04-a[9]*b05-a[11]*b03)*d;o[4]=(a[6]*b08-a[4]*b11-a[7]*b07)*d;o[5]=(a[0]*b11-a[2]*b08+a[3]*b07)*d;o[6]=(a[14]*b02-a[12]*b05-a[15]*b01)*d;o[7]=(a[8]*b05-a[10]*b02+a[11]*b01)*d;
  o[8]=(a[4]*b10-a[5]*b08+a[7]*b06)*d;o[9]=(a[1]*b08-a[0]*b10-a[3]*b06)*d;o[10]=(a[12]*b04-a[13]*b02+a[15]*b00)*d;o[11]=(a[9]*b02-a[8]*b04-a[11]*b00)*d;o[12]=(a[5]*b07-a[4]*b09-a[6]*b06)*d;o[13]=(a[0]*b09-a[1]*b07+a[2]*b06)*d;o[14]=(a[13]*b01-a[12]*b03-a[14]*b00)*d;o[15]=(a[8]*b03-a[9]*b01+a[10]*b00)*d;return o;}
 // ---------- shaders ----------
-const vs=`#version 300 es
-in vec3 p;in vec3 n;uniform mat4 M,R,VP;uniform vec3 iS;out vec3 vN,vW,vO;void main(){vec4 w=M*vec4(p,1.);vW=w.xyz;vO=p;vN=(R*vec4(n*iS,0.)).xyz;gl_Position=VP*w;}`;
-const fsT=`precision highp float;in vec3 vN,vW,vO;uniform vec3 col,emi,cam,sunD,sunC,sky,gnd,fogC,plP,plC;uniform float gloss,fogD,plR,gold,alpha,unlit,oid,pulse,patS,time,useSh;uniform vec4 clipP;uniform sampler2D tex;uniform highp sampler2DShadow sm;uniform mat4 LVP;
+const vsT=`in vec3 p;in vec3 n;uniform mat4 M,R,VP;uniform vec3 iS;out vec3 vN,vW,vO;
+#if SKIN
+in vec4 bi;in vec4 bw;in float pt;in float hm;uniform mat4 BN[16];flat out float vP;out float vH;
+#endif
+void main(){vec3 pp=p,nn=n;
+#if SKIN
+ mat4 S=BN[int(bi.x)]*bw.x+BN[int(bi.y)]*bw.y+BN[int(bi.z)]*bw.z;pp=(S*vec4(p,1.)).xyz;nn=mat3(S)*n;vP=pt;vH=hm;
+#endif
+ vec4 w=M*vec4(pp,1.);vW=w.xyz;vO=p;vN=(R*vec4(nn*iS,0.)).xyz;gl_Position=VP*w;}`;
+const vs='#version 300 es\n#define SKIN 0\n'+vsT;
+const fsT=`precision highp float;in vec3 vN,vW,vO;uniform vec3 col,emi,cam,sunD,sunC,sky,gnd,fogC,plP,plC;uniform float gloss,fogD,plR,gold,alpha,unlit,oid,pulse,patS,time,useSh,toon;uniform vec4 clipP;
+#if SKIN
+flat in float vP;in float vH;uniform vec3 mc[8];uniform vec4 mp;
+#endif
+uniform sampler2D tex;uniform highp sampler2DShadow sm;uniform mat4 LVP;
 layout(location=0) out vec4 o0;layout(location=1) out vec4 o1;
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1,0)),f.x),mix(h21(i+vec2(0,1)),h21(i+vec2(1,1)),f.x),f.y);}
@@ -36,6 +48,25 @@ void main(){
  if(dot(vec4(vW,1.),clipP)>0.)discard;
 #endif
  vec3 N=normalize(vN);vec3 V=normalize(cam-vW);if(dot(N,V)<-.05)N=-N;vec3 base=col;
+#if SKIN
+ {int pt=int(vP+.5);vec3 q=vO;bool dress=mp.y>.5;
+  vec3 cloth=dress?mc[7]:mc[1];
+  if(pt==3){base=mc[0];}
+  else if(pt==2){float t=length(q-vec3(sign(q.x)*.19,1.41,0.));float sl=abs(mp.x);base=t<sl?((mp.x<0.&&t>.3)?mc[2]:cloth):mc[0];if(t<sl&&t>sl-.022)base*=.82;}
+  else if(pt==7){base=mc[7];}
+  else{ // torso, head/neck, legs, feet: position based (smooth boundaries)
+   float coll=1.395+.03*smoothstep(.0,-.08,q.z);float nr=length(vec2(q.x,q.z*1.15));
+   if(q.y>1.47||(q.y>1.37&&nr<.068-max(0.,1.41-q.y)*.3)){base=mc[0];float lip=smoothstep(.026,.018,abs(q.x))*smoothstep(.012,.004,abs(q.y-1.566))*step(.06,q.z);base=mix(base,mix(mc[0],vec3(.62,.25,.24),.55),lip);}
+   else if(dress&&q.y>.12){base=mc[7];}
+   else if(q.y<.105){base=mc[4];}
+   else{base=q.y<.905?(dress?mc[0]*.97:mc[3]):cloth;
+    if(!dress&&mp.w<.5&&q.y>=.905&&q.y<.955)base=vec3(.16,.11,.08);
+    if(mp.w>.5&&q.y>.52&&q.y<.96)base=mc[1];
+    if(mp.z>.5&&q.z>0.&&q.y>1.13&&q.y<coll&&abs(q.x)<(q.y-1.13)*.33+.01){base=mc[2];if(abs(q.x)<.011&&q.y<1.39&&q.y>1.16)base=mc[6];}
+    if(mp.z>.5&&q.z>0.&&q.y>1.13&&q.y<coll){float ed=abs(abs(q.x)-((q.y-1.13)*.33+.01));base=mix(base,mc[1]*.75,smoothstep(.008,.0,ed)*.8);}
+    if(mp.w<.5&&mp.z>.5&&q.z>.05&&q.y<1.1&&q.y>.97){float bt=smoothstep(.009,.004,length(vec2(q.x-.01,mod(q.y-.97,.065)-.032)));base=mix(base,vec3(.85,.75,.45),bt);}}}
+  base=mix(base,mc[5],smoothstep(.35,.65,vH));}
+#endif
 #if TEX==1
  {vec4 tx=texture(tex,vec2(vO.x+.5,.5-vO.y));base=mix(base,tx.rgb,tx.a);}
 #elif TEX==3
@@ -69,12 +100,12 @@ void main(){
 #else
  float shd=0.;
 #if SHADOW
- {vec4 q=LVP*vec4(vW+N*.06,1.);vec3 s=q.xyz/q.w*.5+.5;if(s.x>0.&&s.x<1.&&s.y>0.&&s.y<1.&&s.z<1.)shd=1.-texture(sm,vec3(s.xy,s.z-.0015));}
+ {vec4 q=LVP*vec4(vW+N*.06,1.);vec3 s=q.xyz/q.w*.5+.5;if(s.x>0.&&s.x<1.&&s.y>0.&&s.y<1.&&s.z<1.){float t=1.6/2048.;shd=1.-.25*(texture(sm,vec3(s.xy+vec2(-t,-t),s.z-.0015))+texture(sm,vec3(s.xy+vec2(t,-t),s.z-.0015))+texture(sm,vec3(s.xy+vec2(-t,t),s.z-.0015))+texture(sm,vec3(s.xy+vec2(t,t),s.z-.0015)));}}
 #endif
- float d=dot(N,sunD);float lit=(smoothstep(-.06,.06,d)*.62+smoothstep(.5,.58,d)*.22)*(1.-.78*shd);
+ float d=dot(N,sunD);float lt=smoothstep(-.06,.06,d)*.62+smoothstep(.5,.58,d)*.22;float ls=pow(clamp((d+.2)/1.2,0.,1.),1.3)*.86;float lit=mix(ls,lt,toon)*(1.-.75*shd);
  vec3 amb=mix(gnd,sky,N.y*.5+.5);
- vec3 L=plP-vW;float dl=length(L);L/=dl;float at=max(1.-dl/plR,0.);at=smoothstep(0.,.35,at)*at;float pd=smoothstep(-.05,.1,dot(N,L));
- vec3 Hh=normalize(sunD+V);float sp=smoothstep(.93,.96,dot(N,Hh))*gloss*.5*(1.-shd);
+ vec3 L=plP-vW;float dl=length(L);L/=dl;float at=max(1.-dl/plR,0.);at=smoothstep(0.,.35,at)*at;float pd=mix(clamp(dot(N,L)*.8+.2,0.,1.),smoothstep(-.05,.1,dot(N,L)),toon);
+ vec3 Hh=normalize(sunD+V);float sp=mix(pow(max(dot(N,Hh),0.),24.)*.6,smoothstep(.93,.96,dot(N,Hh))*.5,toon)*gloss*(1.-shd);
  c=base*(amb+sunC*lit+plC*pd*at)+sunC*sp;
  float rim=smoothstep(.62,.75,1.-max(dot(N,V),0.))*smoothstep(-.2,.3,d)*.18*(1.-shd);c+=rim*sunC;
 #if PAT==5
@@ -89,20 +120,28 @@ void main(){
  o0=vec4(c,alpha);
  o1=vec4(N.xy*.5+.5,gold>0.?1.:0.,oid);}`;
 function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw gl.getShaderInfoLog(o);return o;}
-function prog(v,f){const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.bindAttribLocation(p,0,'p');gl.bindAttribLocation(p,1,'n');gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);return p;}
-const UNAMES=['M','R','VP','iS','col','emi','cam','sunD','sunC','sky','gnd','fogC','plP','plC','gloss','fogD','plR','gold','alpha','unlit','oid','pulse','tex','clipP','patS','time','useSh','sm','LVP'];
+function prog(v,f){const p=gl.createProgram();gl.attachShader(p,sh(gl.VERTEX_SHADER,v));gl.attachShader(p,sh(gl.FRAGMENT_SHADER,f));gl.bindAttribLocation(p,0,'p');gl.bindAttribLocation(p,1,'n');gl.bindAttribLocation(p,2,'bi');gl.bindAttribLocation(p,3,'bw');gl.bindAttribLocation(p,4,'pt');gl.bindAttribLocation(p,5,'hm');gl.linkProgram(p);if(!gl.getProgramParameter(p,gl.LINK_STATUS))throw gl.getProgramInfoLog(p);return p;}
+const UNAMES=['M','R','VP','iS','col','emi','cam','sunD','sunC','sky','gnd','fogC','plP','plC','gloss','fogD','plR','gold','alpha','unlit','oid','pulse','tex','clipP','patS','time','useSh','sm','LVP','toon','BN','mc','mp'];
 const PCACHE=new Map();let ENVV=0,ENVU=null;let pr=null,U=null;
-function getP(k){let e=PCACHE.get(k);if(!e){const[pat,tx,disc,shd,unl,gd]=k.split('_').map(Number);const src='#version 300 es\n#define PAT '+pat+'\n#define TEX '+tx+'\n#define DISC '+disc+'\n#define SHADOW '+shd+'\n#define UNLIT '+unl+'\n#define GOLD '+gd+'\n'+fsT;
- const p=prog(vs,src);const u={};UNAMES.forEach(n=>u[n]=gl.getUniformLocation(p,n));e={p,u,v:-1};PCACHE.set(k,e);}return e;}
+function getP(k){let e=PCACHE.get(k);if(!e){const[pat,tx,disc,shd,unl,gd,sk]=k.split('_').map(Number);const hd='#version 300 es\n#define SKIN '+(sk||0)+'\n';const src=hd+'#define PAT '+pat+'\n#define TEX '+tx+'\n#define DISC '+disc+'\n#define SHADOW '+shd+'\n#define UNLIT '+unl+'\n#define GOLD '+gd+'\n'+fsT;
+ const p=prog(hd+vsT,src);const u={};UNAMES.forEach(n=>u[n]=gl.getUniformLocation(p,n));e={p,u,v:-1};PCACHE.set(k,e);}return e;}
 function useK(k){const e=getP(k);if(pr!==e.p){pr=e.p;U=e.u;gl.useProgram(pr);}if(e.v!==ENVV){e.v=ENVV;applyEnvU();}}
 function applyEnvU(){const E=ENVU;if(!E)return;gl.uniform1i(U.tex,3);gl.uniform1i(U.sm,4);gl.uniform1f(U.useSh,SH_ON);gl.uniformMatrix4fv(U.LVP,false,LVP);gl.uniform1f(U.time,TIME);gl.uniformMatrix4fv(U.VP,false,E.VP);gl.uniform3fv(U.cam,E.e);
- gl.uniform3fv(U.sunD,E.sunD);gl.uniform3fv(U.sunC,E.sunC);gl.uniform3fv(U.sky,E.sky);gl.uniform3fv(U.gnd,E.gnd);gl.uniform3fv(U.fogC,E.fog);gl.uniform1f(U.fogD,E.fogD);gl.uniform3fv(U.plP,E.plP);gl.uniform3fv(U.plC,E.plC);gl.uniform1f(U.plR,E.plR);gl.uniform1f(U.pulse,PULSE);}
+ gl.uniform3fv(U.sunD,E.sunD);gl.uniform3fv(U.sunC,E.sunC);gl.uniform3fv(U.sky,E.sky);gl.uniform3fv(U.gnd,E.gnd);gl.uniform3fv(U.fogC,E.fog);gl.uniform1f(U.fogD,E.fogD);gl.uniform3fv(U.plP,E.plP);gl.uniform3fv(U.plC,E.plC);gl.uniform1f(U.plR,E.plR);gl.uniform1f(U.pulse,PULSE);gl.uniform1f(U.toon,E.toon);}
 // shadow depth program
-const svs=`#version 300 es
-in vec3 p;uniform mat4 M,LVP;out vec3 vW;void main(){vec4 w=M*vec4(p,1.);vW=w.xyz;gl_Position=LVP*w;}`;
+const svsT=`in vec3 p;uniform mat4 M,LVP;out vec3 vW;
+#if SKIN
+in vec4 bi;in vec4 bw;uniform mat4 BN[16];
+#endif
+void main(){vec3 pp=p;
+#if SKIN
+ mat4 S=BN[int(bi.x)]*bw.x+BN[int(bi.y)]*bw.y+BN[int(bi.z)]*bw.z;pp=(S*vec4(p,1.)).xyz;
+#endif
+ vec4 w=M*vec4(pp,1.);vW=w.xyz;gl_Position=LVP*w;}`;const svs='#version 300 es\n#define SKIN 0\n'+svsT;
 const sfs=`#version 300 es
 precision highp float;in vec3 vW;uniform vec4 clipP;void main(){if(dot(vec4(vW,1.),clipP)>0.)discard;}`;
 const spr=prog(svs,sfs);const SU={M:gl.getUniformLocation(spr,'M'),LVP:gl.getUniformLocation(spr,'LVP'),clipP:gl.getUniformLocation(spr,'clipP')};
+const sprS=prog('#version 300 es\n#define SKIN 1\n'+svsT,sfs);const SUS={M:gl.getUniformLocation(sprS,'M'),LVP:gl.getUniformLocation(sprS,'LVP'),clipP:gl.getUniformLocation(sprS,'clipP'),BN:gl.getUniformLocation(sprS,'BN')};
 // post: ink outlines + SSAO + sky/clouds + gold halo + desaturation (hi-res), then downsample
 const pvs=`#version 300 es
 in vec3 p;out vec2 uv;void main(){uv=p.xy*.5+.5;gl_Position=vec4(p.xy,0.,1.);}`;
@@ -128,7 +167,7 @@ void main(){vec3 c=texture(cT,uv).rgb;vec4 a=texture(aT,uv);float zr=texture(dT,
  {float hal=0.;for(int r=1;r<=3;r++){float rr=float(r)*9.*rs;for(int i=0;i<8;i++){hal+=texture(aT,uv+o8[i]*px*rr).z;}}hal/=24.;c+=vec3(1.,.71,.18)*hal*(1.-g)*glow*.9;}
 #endif
  float L=dot(c,vec3(.299,.587,.114));vec3 dc=mix(c,vec3(L)*vec3(1.02,1.,.96),desat*(1.-g));
- dc=mix(dc,vec3(.05,.045,.06),e*.92);
+ dc=mix(dc,vec3(.07,.055,.06),e*.8);
  o=vec4(dc,1.);}`;
 const PPN=['cT','aT','dT','skT','px','desat','ink','glow','near','far','inkFar','rs','focal','aoAmt'];const PPC=new Map();
 function getPP(k){let e=PPC.get(k);if(!e){const[sk,ao,gw]=k.split('_').map(Number);const p=prog(pvs,'#version 300 es\n#define SKY '+sk+'\n#define AO '+ao+'\n#define GLOW '+gw+'\n'+pfsT);const u={};PPN.forEach(n=>u[n]=gl.getUniformLocation(p,n));e={p,u};PPC.set(k,e);}return e;}
@@ -195,15 +234,16 @@ function setGrid(x0,x1,z0,z1,hf){for(let j=0;j<=GZ;j++)for(let i=0;i<=GX;i++){co
  const nn=norm([(l-r)/(2*dx),1,(d-u)/(2*dz)]);gN[k]=nn[0];gN[k+1]=nn[1];gN[k+2]=nn[2];}
  gl.bindBuffer(gl.ARRAY_BUFFER,GRID.pb);gl.bufferSubData(gl.ARRAY_BUFFER,0,gP);gl.bindBuffer(gl.ARRAY_BUFFER,GRID.nb);gl.bufferSubData(gl.ARRAY_BUFFER,0,gN);}
 // ---------- draw ----------
-let GOLDUSED=false;let CLIP=[0,0,0,-1];let OID=1,PULSE=0,TRANS=false;const POST={desat:0,ink:1,glow:1,inkFar:120,sky:1,clouds:.5,skyTop:[.3,.5,.85],cloudC:[1,1,1],ao:.3,fog:[.75,.85,.95],sunD:[-.4,.8,.45]};let ENVF=null;
+let GOLDUSED=false;let INK_DEF=.75;let TOON=.3;let CLIP=[0,0,0,-1];let OID=1,PULSE=0,TRANS=false;const POST={desat:0,ink:1,glow:1,inkFar:120,sky:1,clouds:.5,skyTop:[.3,.5,.85],cloudC:[1,1,1],ao:.3,fog:[.75,.85,.95],sunD:[-.4,.8,.45]};let ENVF=null;
 function nextId(){OID=(OID+1)%250;return OID;}
 function draw(m,o){const p=o.p||[0,0,0],s=o.s||[1,1,1],R=rot(o.r||[0,0,0]);
  let M=mul(mul(new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,p[0],p[1],p[2],1]),R),new Float32Array([s[0],0,0,0,0,s[1],0,0,0,0,s[2],0,0,0,0,1]));
  let RR=R;if(o.P){M=mul(o.P.M,M);RR=mul(o.P.R,R);}
  const tr=o.a!==undefined&&o.a<1;
- if(SHPASS){if(!SH_ON||tr||o.u||o.noShadow||(o.P&&o.P.noShadow))return;gl.uniformMatrix4fv(SU.M,false,M);gl.uniform4fv(SU.clipP,o.clip||CLIP);gl.bindVertexArray(m.vao);gl.drawElements(gl.TRIANGLES,m.n,m.big?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,0);gl.bindVertexArray(null);return;}
+ if(SHPASS){if(!SH_ON||tr||o.u||o.noShadow||(o.P&&o.P.noShadow))return;const su=m.skin?SUS:SU;gl.useProgram(m.skin?sprS:spr);if(m.skin){gl.uniformMatrix4fv(SUS.LVP,false,LVP);gl.uniformMatrix4fv(SUS.BN,false,o.bones);}gl.uniformMatrix4fv(su.M,false,M);gl.uniform4fv(su.clipP,o.clip||CLIP);gl.bindVertexArray(m.vao);gl.drawElements(gl.TRIANGLES,m.n,m.big?gl.UNSIGNED_INT:gl.UNSIGNED_SHORT,0);gl.bindVertexArray(null);return;}
  const clipOn=(o.clip&&o.clip[3]!==-1)||CLIP[0]!==0||CLIP[1]!==0||CLIP[2]!==0;const g=o.gold!==undefined?o.gold:(o.P&&o.P.gold)||0;
- useK((o.pat||0)+'_'+(o.tex||0)+'_'+(clipOn?1:0)+'_'+(SH_ON&&!o.u?1:0)+'_'+(o.u?1:0)+'_'+(g>0?1:0));
+ useK((o.pat||0)+'_'+(o.tex||0)+'_'+(clipOn?1:0)+'_'+(SH_ON&&!o.u?1:0)+'_'+(o.u?1:0)+'_'+(g>0?1:0)+'_'+(m.skin?1:0));
+ if(m.skin){gl.uniformMatrix4fv(U.BN,false,o.bones);gl.uniform3fv(U.mc,o.mats);gl.uniform4fv(U.mp,o.mp||[.6,0,0,0]);}
  gl.uniformMatrix4fv(U.M,false,M);gl.uniformMatrix4fv(U.R,false,RR);gl.uniform3f(U.iS,1/s[0],1/s[1],1/s[2]);
  gl.uniform3fv(U.col,o.c||[.5,.5,.5]);gl.uniform3fv(U.emi,o.e||[0,0,0]);gl.uniform1f(U.gloss,o.g||0);
  if(g>0)GOLDUSED=true;gl.uniform1f(U.gold,g);gl.uniform1f(U.patS,o.patS||1);
@@ -221,9 +261,9 @@ function env(o){const e=o.eye,t=o.tgt;const sunD=norm(o.sunD||[-.4,.8,.45]);
  gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,smTex);gl.activeTexture(gl.TEXTURE0);
  pr=null;gl.bindFramebuffer(gl.FRAMEBUFFER,fbo);gl.viewport(0,0,RW,RH);gl.enable(gl.DEPTH_TEST);
  const fovr=(o.fov||50)*Math.PI/180;const V=lookAt(e,t,o.up||[0,1,0]),P=persp(fovr,W/H,o.near||.1,o.far||600);const VP=mul(P,V);CAM={VP,e,near:o.near||.1,far:o.far||600,focal:RH/(2*Math.tan(fovr/2))};
- const fog=o.fog||[.75,.85,.95];ENVV++;ENVU={VP,e,sunD,sunC:o.sunC||[.62,.58,.5],sky:o.sky||[.62,.66,.74],gnd:o.gnd||[.42,.4,.36],fog,fogD:o.fogD||.006,plP:o.plP||[0,-999,0],plC:o.plC||[0,0,0],plR:o.plR||1};
+ const fog=o.fog||[.75,.85,.95];ENVV++;ENVU={VP,e,sunD,sunC:o.sunC||[.62,.58,.5],sky:o.sky||[.62,.66,.74],gnd:o.gnd||[.42,.4,.36],fog,fogD:o.fogD||.006,plP:o.plP||[0,-999,0],plC:o.plC||[0,0,0],plR:o.plR||1,toon:o.toon===undefined?TOON:o.toon};
  const bg=o.bg||fog;gl.clearBufferfv(gl.COLOR,0,[bg[0],bg[1],bg[2],1]);gl.clearBufferfv(gl.COLOR,1,[.5,.5,0,0]);gl.clearBufferfi(gl.DEPTH_STENCIL,0,1,0);
- POST.desat=o.desat||0;POST.ink=o.ink===undefined?1:o.ink;POST.glow=o.glow===undefined?1:o.glow;POST.inkFar=o.inkFar||120;CLIP=o.clip||[0,0,0,-1];
+ POST.desat=o.desat||0;POST.ink=o.ink===undefined?INK_DEF:o.ink;POST.glow=o.glow===undefined?1:o.glow;POST.inkFar=o.inkFar||120;CLIP=o.clip||[0,0,0,-1];
  POST.sky=(o.bg||o.noSky)?0:1;POST.fog=fog;POST.sunD=sunD;POST.skyTop=o.skyTop||mix3(fog,[.22,.45,.86],.6);POST.clouds=o.clouds===undefined?.5:o.clouds;{const lum=fog[0]*.3+fog[1]*.59+fog[2]*.11;POST.cloudC=o.cloudC||mix3(mix3([1,1,1],fog,.15),POST.skyTop,clamp(1-lum*1.7,0,.72));}POST.ao=(typeof NO_AO!=='undefined')?0:(o.ao===undefined?.32:o.ao);POST.VP=VP;}
 // project world point to screen px
 function proj(w){const m=CAM.VP;const x=m[0]*w[0]+m[4]*w[1]+m[8]*w[2]+m[12],y=m[1]*w[0]+m[5]*w[1]+m[9]*w[2]+m[13],ww=m[3]*w[0]+m[7]*w[1]+m[11]*w[2]+m[15];return[(x/ww*.5+.5)*W,(1-(y/ww*.5+.5))*H,ww];}
