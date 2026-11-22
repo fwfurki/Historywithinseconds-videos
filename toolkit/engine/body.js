@@ -173,9 +173,9 @@ function tree(P,k,c,type){k=k||1;type=type||'broad';const v=Math.abs(Math.round(
  const tm=propMesh('trunk'+key,trunkSDF(def),[-2,-.06,-2],[2,def.trunkH+1.8,2],.035);draw(tm,{P,s:[k,k,k],c:[.4,.28,.17],pat:2,patS:7});
  const cm=propMesh('can'+key,canopySDF(def,v*1.7),type==='pine'?[-1.5,.8,-1.5]:[-2.4,1.0,-2.4],type==='pine'?[1.5,4.6,1.5]:[2.4,4.0,2.4],.05);draw(cm,{P,s:[k,k,k],c:tc,pat:1,patS:3});}
 // --- rocks: faceted boulders (random plane cuts + noise)
-function rockSDF(seed){const R=rngS(seed+11);const pl=[];for(let i=0;i<11;i++){const u=R()*2-1,a=R()*Math.PI*2;const r=Math.sqrt(1-u*u);const n=[r*Math.cos(a),Math.abs(u)*.8+.05*(u<0?-1:1)*(i%3),r*Math.sin(a)];const l=Math.hypot(...n);pl.push([n[0]/l,n[1]/l,n[2]/l,.3+R()*.16]);}
- return(x,y,z)=>{const q=[x/1.25,(y-.25)/.85,z];let d=-1e9;for(const p of pl)d=SD.smax(d,q[0]*p[0]+q[1]*p[1]+q[2]*p[2]-p[3],.04);
-  d=SD.smax(d,SD.ell(x,y,z,[0,.25,0],[.8,.6,.72]),.05);d=Math.max(d,-y-.05);const cr=Math.abs(vnoise3(x*4.5+seed,y*4.5,z*4.5)-.5);return d+.05*vnoise3(x*5+seed,y*5,z*5)+.025*vnoise3(x*13,y*13+seed,z*13)-.01;};}
+function rockSDF(seed){const R=rngS(seed+11);const pl=[];for(let i=0;i<15;i++){const u=R()*2-1,a=R()*Math.PI*2;const r=Math.sqrt(1-u*u);const n=[r*Math.cos(a),Math.abs(u)*.8+.05*(u<0?-1:1)*(i%3),r*Math.sin(a)];const l=Math.hypot(...n);pl.push([n[0]/l,n[1]/l,n[2]/l,.26+R()*.24]);}
+ return(x,y,z)=>{const q=[x/1.25,(y-.25)/.85,z];let d=-1e9;for(const p of pl)d=SD.smax(d,q[0]*p[0]+q[1]*p[1]+q[2]*p[2]-p[3],.012);
+  d=SD.smax(d,SD.ell(x,y,z,[0,.25,0],[.8,.6,.72]),.05);d=Math.max(d,-y-.05);const cr=Math.abs(vnoise3(x*4.5+seed,y*4.5,z*4.5)-.5);return d+.014*vnoise3(x*6+seed,y*6,z*6)+.008*vnoise3(x*18,y*18+seed,z*18)-.006;};}
 function smoothstepJ(a,b,x){x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x);}
 function rock(P,k,c,seed){seed=(seed||0)%4;const m=propMesh('rockF'+seed,rockSDF(seed),[-.9,-.2,-.8],[.9,.9,.8],.025);draw(m,{P,s:[k||1,k||1,k||1],c:c||[.56,.53,.49],pat:6,patS:2.5});}
 // --- cow: detailed SDF (ribcage, hips, neck, head with muzzle, ears, horns, jointed legs, hooves, tail, udder) + patch pattern
