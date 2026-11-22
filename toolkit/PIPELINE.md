@@ -59,10 +59,19 @@ The run starts many hours before the posts go out (it fires at 22:54 UTC, and th
    (`examples/titanic_scenes_standalone.js` carries its own helpers: assemble it with head.js + lab.js only.)
 5. Test frames: `SCENE=file:///ABS/scene.html node toolkit/scripts/cap.js test 100 400 ...` → check them visually (brightness, framing, label width under 680 px), and fix.
 6. Render in 2 parallel halves: `SCENE=... node cap.js full 0 N1 h1.mp4` and `... full N1 N h2.mp4` (30 fps, 1080×1920 native — see Quality mode), then concat with `-c copy`.
-7. Final encode: (already 1080×1920), `vignette=PI/6`, `noise=alls=3:allf=t`, `subtitles=subs.ass`; audio mixed as in Quality mode (narration on top, ducked music bed); libx264 crf 17 -preset slow, maxrate 16M bufsize 32M; aac 192k; faststart. Check that the duration is over 61 s.
+7. Final encode: (already 1080×1920), `vignette=PI/6` (no grain noise, see Engine v2), subtitles drawn in-canvas; audio mixed as in Quality mode (narration on top, ducked music bed); libx264 crf 17 -preset slow, maxrate 16M bufsize 32M; aac 192k; faststart. Check that the duration is over 61 s.
 8. Copy the MP4 to `videos/<slug>.mp4` in this repo, commit and push (`git -c push.negotiate=true push origin HEAD`). Media URL: `https://raw.githubusercontent.com/fwfurki/Historywithinseconds-videos/main/videos/<slug>.mp4`
 9. Metricool `createScheduledPost` with that URL at the slot. **Immediately** add the topic to the do-not-repeat table in `toolkit/topics.md` (topic, file, slot, post id), then commit and push **before starting the next video**, so a topic can never be used twice, even if the run stops midway.
 10. End with a short summary: topics, slots, credits left, and any issues.
+
+## Engine v2 (Nov 2026): use this, it already implements the Visual style + CHRONICLE system
+Files in `toolkit/engine/`: `head.js` (WebGL2, native 1080×1920, toon shading, screen-space ink outlines from depth/normal/object-id, GOLD highlight + halo + scene desaturation via `env({desat})` and `gold:1` on draws/transforms, clip planes for cutaways, textured quads), `people.js` (semi-realistic `person()` with faces, hair, hats, dresses, walk/sit/pose presets; huts, trees, cows, barrels), `chronicle.js` (globe3D opener, `badge`, `ribbon`, `museum` label, `seal`, `plaque3D` brass odometer, `subtitle` navy pill with amber key word, `tag`, `bigText`, `archiveCard`, `outro`), `land.js` (Natural Earth 110m land, public domain). Old v1 files are in `engine/legacy/`.
+Workflow that worked (see `examples/lake_nyos_*` and `examples/halifax_*`):
+1. Narration: download MP3, then `python3 scripts/tighten.py narr_raw.mp3 narr.wav 0.5` (caps pauses at 0.5 s) and `ffmpeg -i narr.wav -af atempo=1.07 narr_f.wav` (eleven_v4 with this voice reads slowly: ~87 s raw for 170 words → ~74 s after this).
+2. Segments: silencedetect on narr_f.wav → `segs.txt` (count line + Python list); `python3 scripts/align.py script.txt segs.txt phr.json` maps script phrases to segments (DP, no network needed; whisper models are blocked by the proxy).
+3. Subtitles: write `disp.txt` (one line per phrase, numbers as digits, `*` before the key word) → `python3 scripts/subs.py phr.json disp.txt subs.json`. Subtitles are drawn in-canvas (no ASS step).
+4. Scenes: `scenes.js` with `S=[[start,end,fn],...]`, `overlays()` and `window.renderFrame`. Test with `scripts/test.sh <dir> frame1 frame2 ...` (builds scene.html and makes 3×2 contact sheets in `<dir>/t/`). Portrait framing means a narrow horizontal FOV (~24° at fov 40): always aim the camera at the subject, and keep cameras above `hf()` terrain and outside buildings.
+5. Render 2 halves with `cap.js full` (≈1.3–1.6 s/frame per process on 2 cores, ~30 min per video), audio with `sfxlib.py` (music stem + sfx stem), then `scripts/final.sh <dir> <END>` (concat, ducked mix with loudnorm, crf 17). Film-grain noise is OFF: on flat cel colours it doubled the bitrate (106 MB, over GitHub's 100 MB limit) and TikTok re-encodes it into mush anyway.
 
 ## Rendering environment notes
 - Chrome is at /usr/bin/google-chrome; playwright is at /opt/npm-tools/node_modules/playwright (or set the PW env var).
