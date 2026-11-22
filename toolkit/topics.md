@@ -12,7 +12,7 @@ Status: the first six rows are DRAFTS. Never post them; the topics are taken any
 | Destruction of Pompeii | pompeii.mp4 | 2026-11-25 12:00 | 436880747 |
 | Hindenburg disaster (test post) | hindenburg.mp4 | 2026-11-21 13:05 | 436883767 |
 | Lake Nyos CO2 disaster (Cameroon, 1986) | lake_nyos.mp4 | 2026-11-22 10:00 UTC | 437160097 |
-| Halifax Explosion (Mont-Blanc, 1917) | halifax_explosion.mp4 | 2026-11-22 18:00 UTC | 437170657 |
+| Halifax Explosion (Mont-Blanc, 1917) | halifax_explosion_v4.mp4 (re-rendered with engine v4; old halifax_explosion.mp4 unused) | 2026-11-22 18:00 UTC | 437680860 |
 
 Also avoid: the Dancing Plague of Strasbourg (owner said no).
 
