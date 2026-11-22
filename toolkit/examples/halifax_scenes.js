@@ -8,8 +8,8 @@ function hf(x,z){const w=halfW(z);let h;
  if(x<-w)h=.8+Math.min(14,(-w-x)*.32)+Math.sin(z*.08+x*.05)*.6;else if(x>w)h=.8+Math.min(10,(x-w)*.24)+Math.cos(z*.07)*.5;else h=-3;
  const e=Math.min(Math.abs(x+w),Math.abs(x-w));if(e<2.5&&Math.abs(x)>=w-0.01)h=lerp(-1,h,ss(0,2.5,e));
  return h;}
-let GK='';function terrain(c){if(GK!=='T'){setGrid(-90,90,-90,90,hf);GK='T';}draw(GRID,{c:c||[.52,.66,.4]});}
-function water(c){draw(BOX,{p:[0,-.5,0],s:[600,1,600],c:c||[.3,.55,.78],g:.5});}
+let GK='';function terrain(c){if(GK!=='T'){setGrid(-90,90,-90,90,hf);GK='T';}draw(GRID,{c:c||[.52,.66,.4],pat:1,patS:1.2});}
+function water(c){draw(BOX,{p:[0,-.5,0],s:[600,1,600],c:c||[.3,.55,.78],g:.6,pat:5,patS:.45});}
 // city: merged house meshes (Halifax side), destroyed + snow variants
 const CITY=(()=>{let s=5;const r=()=>{s=(s*9301+49297)%233280;return s/233280;};const walls=[[],[],[]],roofs=[[],[]],win=[],rub=[[],[]],chim=[];const pos=[];
  for(let z=-46;z<=46;z+=4.2)for(let x=-20;x>-60;x-=4.6){if(r()<.18)continue;if(Math.abs(z-6)<3.2)continue;const xx=x+r()*1.2,zz=z+r()*1.2;const y=hf(xx,zz);const w=2.2+r()*.8,d=2.6+r()*.6,h=2+r()*1.4;const ry=0;
@@ -22,13 +22,13 @@ const CITY=(()=>{let s=5;const r=()=>{s=(s*9301+49297)%233280;return s/233280;};
  return{walls:walls.map(merge),roofs:roofs.map(merge),win:merge(win),chim:merge(chim),rub:rub.map(merge),pos};})();
 const WALLC=[[.86,.8,.68],[.72,.5,.38],[.62,.68,.74]],ROOFC=[[.38,.3,.28],[.3,.34,.4]];
 function city(o){o=o||{};const sn=o.snow||0;const T=c=>mix3(c,[.95,.96,.98],sn);
- if(!(o.ruin>=1)){CITY.walls.forEach((m,i)=>draw(m,{c:T(WALLC[i])}));CITY.roofs.forEach((m,i)=>draw(m,{c:T(ROOFC[i])}));draw(CITY.win,{c:[.18,.2,.26]});draw(CITY.chim,{c:T([.55,.3,.25])});}
+ if(!(o.ruin>=1)){CITY.walls.forEach((m,i)=>draw(m,{c:T(WALLC[i]),pat:i==1?3:6,patS:i==1?2.2:1.5}));CITY.roofs.forEach((m,i)=>draw(m,{c:T(ROOFC[i]),pat:4,patS:2.6}));draw(CITY.win,{c:[.18,.2,.26]});draw(CITY.chim,{c:T([.55,.3,.25]),pat:3,patS:3});}
  else{CITY.rub.forEach((m,i)=>draw(m,{c:T(i?[.4,.33,.28]:[.55,.45,.36])}));}}
 const DART=(()=>{const L=[],R=[];for(let i=0;i<26;i++){const z=-44+i*3.6,x=16+(i%4)*5;const y=hf(x,z);L.push({p:[x,y+1,z],s:[2.2,2,2.6]});R.push({p:[x,y+2.3,z],s:[2.5,.6,2.9]});}return{w:merge(L),r:merge(R)};})();
 const PIERS=(()=>{const L=[];for(let i=-3;i<=3;i++){const z=i*11;const w=halfW(z);L.push({p:[-w+3.5,.35,z],s:[8,.5,2.4]});for(let k=0;k<6;k++)L.push({p:[-w+.5+k*1.4,-.6,z+1.1],s:[.25,2,.25]},{p:[-w+.5+k*1.4,-.6,z-1.1],s:[.25,2,.25]});}return merge(L);})();
 const RAIL=(()=>{const L=[];for(let z=-80;z<80;z+=.8)L.push({p:[-halfW(z)-3.2,hf(-halfW(z)-3.2,z)+.08,z],s:[1.6,.08,.22]});return merge(L);})();
-function harbour(o){o=o||{};water(o.water);terrain(o.ground);if(!o.noCity)city(o);draw(DART.w,{c:mix3([.8,.74,.6],[.95,.96,.98],o.snow||0)});draw(DART.r,{c:mix3([.35,.3,.3],[.95,.96,.98],o.snow||0)});
- if(!(o.ruin>=1))draw(PIERS,{c:[.45,.35,.25]});draw(RAIL,{c:[.3,.25,.2]});}
+function harbour(o){o=o||{};water(o.water);terrain(o.ground);if(!o.noCity)city(o);draw(DART.w,{c:mix3([.8,.74,.6],[.95,.96,.98],o.snow||0),pat:6,patS:1.5});draw(DART.r,{c:mix3([.35,.3,.3],[.95,.96,.98],o.snow||0),pat:4,patS:2.6});
+ if(!(o.ruin>=1))draw(PIERS,{c:[.45,.35,.25],pat:2,patS:1.6});draw(RAIL,{c:[.3,.25,.2]});}
 // ---- ships ----
 function hullMesh(){const P=[],N=[],I=[];const S=[];const n=22;for(let i=0;i<=n;i++){const u=i/n;// u=0 stern, 1 bow
   const bw=u>.75?Math.sqrt(Math.max(0,1-Math.pow((u-.75)/.25,2))):(u<.08?.8+.2*(u/.08):1);S.push([u-.5,bw]);}
@@ -48,11 +48,19 @@ function ship(P,o){o=o||{};const L=o.L||14,B=o.B||2.4,D=o.D||2;const hc=o.hull||
  for(let k=0;k<4;k++)draw(BOX,{P:SP,p:[B*.31,1.25,-L*.13+k*.5],s:[.02,.25,.3],c:[.15,.18,.25]});
  draw(CYL,{P:SP,p:[0,1.7,-L*.2],s:[.38,1.6,.38],c:o.fun||[.2,.2,.2]});draw(CYL,{P:SP,p:[0,2.75,-L*.2],s:[.4,.35,.4],c:o.band||[.85,.2,.15]});
  for(const zz of[L*.28,-L*.36]){draw(CYL,{P:SP,p:[0,.9,zz],s:[.08,3.6,.08],c:[.35,.28,.2]});draw(BOX,{P:SP,p:[0,2.9,zz],s:[1.4,.06,.06],c:[.35,.28,.2]});draw(BOX,{P:SP,p:[0,1.2,zz],r:[.3,0,0],s:[.06,.06,2.4],c:[.35,.28,.2]});}
+ draw(BOX,{P:SP,p:[0,.71,0],s:[B*.92,.02,L*.86],c:[.62,.5,.36],pat:2,patS:3.5});
+ for(const sd of[-1,1]){draw(BOX,{P:SP,p:[sd*B*.47,1.0,L*.02],s:[.03,.03,L*.8],c:[.85,.85,.82]});for(let k=-6;k<=6;k++)draw(BOX,{P:SP,p:[sd*B*.47,.86,k*L*.065],s:[.025,.3,.025],c:[.85,.85,.82]});
+  for(let k=-5;k<=5;k++)draw(SPH,{P:Object.assign({},SP,{noInk:1}),p:[sd*(B*.5+.005),.42,k*L*.07],s:[.012,.07,.07],c:[.75,.78,.82]});
+  const LB=cxf(SP,xf([sd*B*.36,1.55,-L*.12]));draw(HULL,{P:LB,s:[.38,.32,1.4],c:[.95,.95,.92]});draw(CYL,{P:SP,p:[sd*B*.36,1.25,-L*.12-.5],s:[.03,.45,.03],c:[.3,.3,.32]});draw(CYL,{P:SP,p:[sd*B*.36,1.25,-L*.12+.5],s:[.03,.45,.03],c:[.3,.3,.32]});}
+ for(let k=0;k<6;k++)draw(BOX,{P:SP,p:[0,1.95,-L*.04-.45+k*.18],s:[B*.51,.12,.1],c:[.12,.15,.22]});
+ for(const zz of[L*.18,-L*.3])draw(BOX,{P:SP,p:[0,.8,zz],s:[B*.5,.14,L*.12],c:[.3,.24,.18],pat:2,patS:4});
  if(o.cargo){for(let k=0;k<6;k++)barrel(cxf(SP,xf([-.6+(k%3)*.6,.95,L*.18+Math.floor(k/3)*.65])),o.gold?[.75,.5,.2]:[.6,.4,.22]);}
  if(o.name){nameTex(o.name);dynTex('nm'+o.name,NM);for(const sd of[-1,1])draw(QUAD,{P:SP,p:[sd*(B*.5+.02),.55,L*.05],r:[0,sd*Math.PI/2,0],s:[L*.5,L*.05,1],c:[1,1,1],tex:3,u:1});}}
 const NM=document.createElement('canvas');NM.width=1024;NM.height=100;function nameTex(s){const g=NM.getContext('2d');g.clearRect(0,0,1024,100);g.fillStyle='#f4f1e8';g.font='800 86px Montserrat';g.textAlign='center';g.textBaseline='middle';g.fillText(s,512,52);}
 function smoke(x,y,z,t,k,o){o=o||{};k=k||1;for(let i=0;i<18;i++){const ph=(t*.25+i/18)%1;const r=(.6+ph*2.2)*k;draw(SPHL,{p:[x+Math.sin(i*2.1)*ph*1.5*k+ph*3*k*(o.drift||1),y+ph*9*k,z+Math.cos(i*1.3)*ph*1.2*k],s:[r,r*.8,r],c:o.c||[.32,.3,.3],a:.55*(1-ph),u:o.u?1:0});}}
-function flames(x,y,z,t,k){k=k||1;for(let i=0;i<9;i++){const f=.5+.5*Math.sin(t*11+i*1.9);draw(CONE,{p:[x+Math.sin(i*2.4)*.5*k,y,z+Math.cos(i*2.4)*.7*k],s:[.35*k,(1.2+f*.9)*k,.35*k],c:i%3?[1,.55,.12]:[1,.82,.3],u:1,id:7});}}
+function flames(x,y,z,t,k){k=k||1;for(let i=0;i<10;i++){const f=.5+.5*Math.sin(t*9+i*1.9),g=.5+.5*Math.sin(t*13+i*2.7);const px=x+Math.sin(i*2.4)*.55*k,pz=z+Math.cos(i*2.4)*.75*k;const h=(1.1+f*.9)*k;
+ draw(SPHL,{p:[px,y+h*.45,pz],s:[.32*k*(1-.25*g),h*.55,.32*k*(1-.25*g)],c:[1,.48+.1*g,.1],u:1,id:7,a:.92});draw(SPHL,{p:[px,y+h*.3,pz],s:[.18*k,h*.32,.18*k],c:[1,.86,.4],u:1,id:7,a:.95});}
+ for(let i=0;i<14;i++){const ph=(t*.9+i*.071)%1;draw(SPHL,{p:[x+Math.sin(i*3.3+t)*.8*k,y+ph*4*k,z+Math.cos(i*2.1)*.8*k],s:[.04*k,.04*k,.04*k],c:[1,.7,.25],u:1,a:1-ph*.9});}}
 // ---- palettes ----
 const DAY={sky:[.68,.72,.8],gnd:[.46,.45,.42],sunC:[.6,.57,.5],sunD:[.5,.6,.45],fog:[.78,.85,.92],fogD:.004};
 const COLD={sky:[.66,.7,.78],gnd:[.45,.45,.45],sunC:[.55,.55,.55],sunD:[.4,.7,.4],fog:[.86,.88,.92],fogD:.009};
@@ -79,7 +87,7 @@ function sCollide(t){const T=14.8+t;const pm=mbPos(T),pi=imoPos(T);const hit=T>1
  ship({...xf(pm,[0,Math.PI+lerp(0,.35,ss(15,18,T)),0]),gold:.0},{hull:[.2,.2,.22],sup:[.85,.82,.75],cargo:1});ship(xf(pi,[0,lerp(0,-.15,ss(16,18,T)),0]),{hull:[.15,.15,.17],sup:[.6,.58,.55],band:[.9,.9,.9],name:'BELGIAN RELIEF',L:15});
  if(T>18.3&&T<19.6)for(let i=0;i<16;i++){const ph=(T-18.3)/1.3;draw(SPHL,{p:[1+Math.sin(i*2)*ph*3,1.5+ph*2-ph*ph*3,-6+Math.cos(i*3)*ph*3],s:[.12,.12,.12],c:[1,.85,.3],u:1});}}
 function plinth(fig,t,o){o=o||{};// museum gallery: stone plinth, slow turn, camera arcs
- const a=.6+t*.18;env({sky:[.5,.48,.46],gnd:[.25,.22,.2],sunC:[.45,.42,.38],sunD:[-.3,.8,.6],fog:[.13,.12,.14],fogD:.02,eye:[Math.sin(a)*o.r,o.h,Math.cos(a)*o.r],tgt:[0,o.ty,0],fov:40,plP:[1.5,5,3],plC:[.8,.7,.5],plR:12,desat:.25});
+ const a=.6+t*.18;env({noSky:1,sky:[.5,.48,.46],gnd:[.25,.22,.2],sunC:[.45,.42,.38],sunD:[-.3,.8,.6],fog:[.13,.12,.14],fogD:.02,eye:[Math.sin(a)*o.r,o.h,Math.cos(a)*o.r],tgt:[0,o.ty,0],fov:40,plP:[1.5,5,3],plC:[.8,.7,.5],plR:12,desat:.25});
  draw(BOX,{p:[0,-.5,0],s:[60,1,60],c:[.32,.28,.26]});for(let i=-3;i<=3;i++)draw(BOX,{p:[i*4,3,-9],s:[3.6,6,.3],c:[.28,.24,.24]});draw(BOX,{p:[0,6.2,-9],s:[30,.3,.5],c:[.55,.42,.2]});
  draw(CYL,{p:[0,0,0],s:[o.pr||1.4,o.ph||1,o.pr||1.4],c:[.72,.68,.62]});draw(CYL,{p:[0,o.ph||1,0],s:[(o.pr||1.4)*1.1,.12,(o.pr||1.4)*1.1],c:[.8,.76,.7]});
  fig(cxf(xf([0,(o.ph||1)+.12,0],[0,-t*.35,0]),xf([0,0,0]),{gold:1}));}
@@ -107,7 +115,7 @@ function sCrowd(t){const sh=t<1.5?0:t<3.2?1:2;const lt=t-[0,1.5,3.2][sh];const p
   draw(BOX,{p:[hx+1,y0+1.7,hz],s:[.03,1.2,1.6],c:[.75,.88,1],a:.22,u:1});}}
 function coleman(P,o){person(P,Object.assign({coat:[.2,.22,.3],sleeve:[.94,.93,.9],shirt:[.94,.93,.9],tie:[.15,.15,.2],moustache:1,hair:HAIRS[0],pants:[.2,.22,.3]},o||{}));}
 function sVince(t){plinth(P=>coleman(P,{}),t,{r:3.6,h:2.3,ty:1.95,pr:.9,ph:.9});}
-function office(t,o){o=o||{};env({sky:[.62,.6,.58],gnd:[.38,.34,.3],sunC:[.5,.47,.42],sunD:[.7,.5,.3],fog:[.3,.27,.25],fogD:.01,eye:o.eye,tgt:o.tgt,fov:o.fov||42,plP:[2.4,2.2,0],plC:[1,.6,.3].map(v=>v*(o.glow||.8)),plR:7,desat:o.desat||0});
+function office(t,o){o=o||{};env({noSky:1,sky:[.62,.6,.58],gnd:[.38,.34,.3],sunC:[.5,.47,.42],sunD:[.7,.5,.3],fog:[.3,.27,.25],fogD:.01,eye:o.eye,tgt:o.tgt,fov:o.fov||42,plP:[2.4,2.2,0],plC:[1,.6,.3].map(v=>v*(o.glow||.8)),plR:7,desat:o.desat||0});
  draw(BOX,{p:[0,-.05,0],s:[8,.1,8],c:[.45,.33,.22]});draw(BOX,{p:[-3,1.6,0],s:[.1,3.2,8],c:[.62,.58,.48]});draw(BOX,{p:[0,1.6,-3],s:[8,3.2,.1],c:[.6,.55,.45]});
  draw(BOX,{p:[3,.5,0],s:[.1,1,8],c:[.6,.55,.45]});draw(BOX,{p:[3,2.9,0],s:[.1,.6,8],c:[.6,.55,.45]});for(const z of[-3,-1.3,1.3,3])draw(BOX,{p:[3,1.6,z],s:[.1,2.2,.25],c:[.6,.55,.45]});
  // window view: harbour glow + smoke
@@ -156,7 +164,7 @@ function sToll(t){const k=ease(ss(0,4,t));env({...DAY,sky:[.62,.6,.6],fog:[.8,.7
 function sEmpty(t){office(t,{eye:[lerp(-.8,-.4,t/1.7),1.4,lerp(1.8,1.5,t/1.7)],tgt:[1.5,.95,.4],glow:.25,cap:1,desat:.5});draw(BOX,{p:[3.4,1.6,0],s:[.12,2.2,6],c:[.55,.55,.6],u:1,id:0});}
 function sSnow(t){const k=ease(ss(0,3.4,t));env({...COLD,eye:[lerp(-6,-10,k),lerp(16,20,k),lerp(34,40,k)],tgt:[-24,3,2],fov:46,desat:.25});harbour({ruin:1,snow:ss(0,3,t)*.85,ground:mix3([.52,.66,.4],[.93,.94,.96],ss(0,2.5,t))});
  for(let i=0;i<160;i++){const x=-40+((i*37)%60),z=-20+((i*53)%50);const y=((20-((t*3+i*.7)%20)));draw(SPHL,{p:[x+Math.sin(t+i)*.5,y,z],s:[.12,.12,.12],c:[1,1,1],u:1,id:0});}}
-function sArchive(t){env({sky:[.32,.28,.26],gnd:[.18,.15,.13],sunC:[.4,.33,.26],sunD:[-.3,.6,.7],fog:[.1,.09,.08],fogD:.035,eye:[0,1.7,lerp(6.5,5,ease(ss(0,4,t)))],tgt:[0,1.5,0],fov:44,plP:[0,2.5,2],plC:[.7,.52,.3],plR:7});
+function sArchive(t){env({noSky:1,sky:[.32,.28,.26],gnd:[.18,.15,.13],sunC:[.4,.33,.26],sunD:[-.3,.6,.7],fog:[.1,.09,.08],fogD:.035,eye:[0,1.7,lerp(6.5,5,ease(ss(0,4,t)))],tgt:[0,1.5,0],fov:44,plP:[0,2.5,2],plC:[.7,.52,.3],plR:7});
  for(let s=0;s<3;s++){for(const sd of[-1,1]){const x=sd*2.2;draw(BOX,{p:[x,1.6,-s*2.2],s:[.12,3.2,1.4],c:[.35,.22,.13]});}for(let y=0;y<5;y++){draw(BOX,{p:[0,.3+y*.65,-s*2.2],s:[4.4,.06,1.4],c:[.4,.26,.15]});for(let b=0;b<7;b++)draw(BOX,{p:[-1.8+b*.6,.55+y*.65,-s*2.2],s:[.5,.42,1.1],c:[[.62,.56,.46],[.55,.5,.42],[.5,.45,.38]][(b+y+s)%3]});}}}
 // ---- timeline ----
 const S=[[0,2.6,sGlobe],[2.6,6.6,sHook],[6.6,11.1,sCity],[11.1,14.6,sShips],[14.6,19.1,sCollide],[19.1,21.6,sMB],[21.6,26.6,sCargo],[26.6,31.2,sFire],[31.2,33.9,sDrift],[33.9,39.2,sCrowd],[39.2,43.3,sVince],[43.3,47.4,sRun],[47.4,51.6,sMsg],[51.6,55.4,sBlast],[55.4,59.3,sCloudWide],[59.3,64.8,sWave],[64.8,69.2,sToll],[69.2,71.3,sEmpty],[71.3,75.0,sSnow],[75.0,79.4,sArchive]];

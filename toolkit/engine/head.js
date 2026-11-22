@@ -89,6 +89,8 @@ void main(){
   float w=sin(uv.x*1.1+time*1.4+vn(uv*.3)*4.)+sin(uv.y*1.6-time*1.0+uv.x*.4);base*=.93+.05*w;base=mix(base,vec3(.92,.97,1.),smoothstep(1.55,1.75,w)*.6);wfres=1.;
 #elif PAT==6
   base*=.9+.16*fbm(uv*1.5);
+#elif PAT==8
+  {vec2 o2=vO.xz*2.2+vO.y*1.3;float sp=smoothstep(.56,.6,fbm(o2+vec2(3.1,1.7)));base=mix(base,vec3(.93,.91,.87),sp);base=mix(base,vec3(.12,.1,.09),smoothstep(.07,.05,vO.y));}
 #else
   base*=.82+.3*fbm(uv*.8);base=mix(base,base*.8,step(.8,vn(uv*6.)));
 #endif

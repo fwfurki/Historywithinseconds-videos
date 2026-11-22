@@ -150,16 +150,48 @@ function person(P,o){o=o||{};const sk=o.skin||SKINS[0],hc=o.hair||HAIRS[0],coat=
  return BN;}
 // ---------- smooth props ----------
 const PROP=new Map();function propMesh(key,f,b0,b1,res){let m=PROP.get(key);if(!m){m=sdfMesh(f,b0,b1,res);PROP.set(key,m);}return m;}
-function treeCanopy(seed){return(x,y,z)=>{let d=1e9;for(let i=0;i<7;i++){const a=i*2.4+seed,r=.35+.25*((i*37+seed*13)%7)/7;const c=[Math.cos(a)*r*.9,1.9+((i*53)%5)/5*.7,Math.sin(a)*r*.9];d=SD.smin(d,SD.sph(x,y,z,c,.55+((i*17)%5)/18),.35);}
- d=SD.smin(d,SD.sph(x,y,z,[0,2.35,0],.6),.3);return d+.06*vnoise3(x*5+seed,y*5,z*5)-.03;};}
-function tree(P,k,c){k=k||1;const v=Math.abs(Math.round((P.M[12]*7.3+P.M[14]*3.1)))%3;const tc=c||[.32,.58,.26];
- const trunk=propMesh('trunk',(x,y,z)=>{let d=SD.rc(x,y,z,[0,0,0],[0,1.9,0],.14,.07);d=SD.smin(d,SD.rc(x,y,z,[0,1.2,0],[.35,1.75,.1],.06,.035),.05);d=SD.smin(d,SD.rc(x,y,z,[0,1.4,0],[-.3,1.9,-.15],.05,.03),.05);return Math.max(d,-y);},[-.5,-.01,-.4],[.6,2.1,.4],.03);
- draw(trunk,{P,s:[k,k,k],c:[.42,.28,.16]});const cm=propMesh('canopy'+v,treeCanopy(v*1.7),[-1.4,1.1,-1.4],[1.4,3.1,1.4],.05);draw(cm,{P,s:[k,k,k],c:tc,pat:1,patS:2.5});}
-function rock(P,k,c,seed){seed=seed||0;const m=propMesh('rock'+(seed%3),(x,y,z)=>SD.ell(x,y,z,[0,.3,0],[.6,.4,.5])+.12*vnoise3(x*3+seed,y*3,z*3)+.05*vnoise3(x*8,y*8+seed,z*8)-.06,[-.9,-.2,-.8],[.9,.9,.8],.035);draw(m,{P,s:[k||1,k||1,k||1],c:c||[.55,.52,.48],pat:6,patS:2});}
-function cow(P,c){c=c||[.55,.38,.24];const m=propMesh('cow',(x,y,z)=>{let d=SD.ell(x,y,z,[0,.98,0],[.36,.38,.78]);d=SD.smin(d,SD.ell(x,y,z,[0,1.12,.72],[.17,.2,.22]),.12);d=SD.smin(d,SD.ell(x,y,z,[0,1.02,.98],[.14,.13,.16]),.08);
-  for(const[a,b]of[[.2,.5],[-.2,.5],[.2,-.5],[-.2,-.5]])d=SD.smin(d,SD.rc(x,y,z,[a,.85,b],[a*.95,.02,b],.08,.05),.06);d=SD.smin(d,SD.rc(x,y,z,[0,1.2,-.7],[0,.75,-.85],.03,.02),.03);return d;},[-.5,-.02,-1.0],[.5,1.45,1.2],.03);
- draw(m,{P,c});draw(SPH,{P,p:[0,.99,1.12],s:[.12,.1,.06],c:[.85,.7,.65]});for(const sd of[-1,1]){draw(CONE,{P,p:[sd*.13,1.27,.82],r:[0,0,sd*-1.1],s:[.03,.2,.03],c:[.92,.9,.82]});draw(SPH,{P:Object.assign({},P,{noInk:1}),p:[sd*.1,1.12,1.0],s:[.025,.025,.02],c:[.05,.05,.05]});}
- draw(SPH,{P,p:[-.2,1.15,-.1],s:[.2,.15,.3],c:[.95,.93,.9]});}
+// --- trees: trunk + forked branches + separate noisy leaf clumps (types: 'broad' default, 'acacia', 'pine')
+function rngS(seed){let x=Math.sin(seed*91.7)*1e4;return()=>{x=Math.sin(x*12.9898+78.233)*43758.5453;return x-Math.floor(x);};}
+function treeDef(type,seed){const R=rngS(seed+1);const br=[],cl=[];
+ if(type==='pine'){for(let i=0;i<6;i++){const y=1.0+i*.55,r=1.25-i*.19;cl.push({c:[0,y,0],r,cone:1,h:.9});}return{trunkH:4.2,br,cl};}
+ const n=type==='acacia'?5:6;for(let i=0;i<n;i++){const a=i/n*Math.PI*2+R()*.8;const up=type==='acacia'?.55:1;const len=(type==='acacia'?1.3:.9)+R()*.5;
+  const s=[0,1.3+R()*.6,0];const e=[Math.cos(a)*len,s[1]+len*up*(.8+R()*.5),Math.sin(a)*len];br.push([s,e]);
+  const cr=type==='acacia'?.75+R()*.25:.55+R()*.3;cl.push({c:[e[0]*1.05,e[1]+(type==='acacia'?.05:.15),e[2]*1.05],r:cr,flat:type==='acacia'});
+  if(type!=='acacia'){const m=[s[0]*.4+e[0]*.6,s[1]*.4+e[1]*.6+.25,s[2]*.4+e[2]*.6];cl.push({c:m,r:cr*.75});const a2=a+.6;cl.push({c:[e[0]+Math.cos(a2)*.35,e[1]+.35,e[2]+Math.sin(a2)*.35],r:cr*.6});}}
+ if(type!=='acacia')cl.push({c:[0,2.55+R()*.3,0],r:.75});
+ return{trunkH:type==='acacia'?1.5:1.7,br,cl};}
+function canopySDF(def,seed){return(x,y,z)=>{let d=1e9;for(const c of def.cl){let e;
+  if(c.cone){const ry=y-c.c[1];e=Math.max(Math.hypot(x,z)*(c.h/c.r)+ry-c.h,-ry-.05);e*=.7;}
+  else if(c.flat)e=SD.ell(x,y,z,c.c,[c.r*1.35,c.r*.42,c.r*1.35]);else e=SD.sph(x,y,z,c.c,c.r);
+  d=SD.smin(d,e,c.cone?.05:.09);}
+ const n=vnoise3(x*3.1+seed,y*3.1,z*3.1)*.22+vnoise3(x*7.3,y*7.3+seed,z*7.3)*.1+vnoise3(x*15,y*15,z*15+seed)*.05;return d+n-.14;};}
+function trunkSDF(def){return(x,y,z)=>{let d=SD.rc(x,y,z,[0,-.1,0],[0,def.trunkH,0],.17,.09);d=SD.smin(d,SD.rc(x,y,z,[0,0,0],[0,.35,0],.26,.17),.1);
+ for(const[s,e]of def.br)d=SD.smin(d,SD.rc(x,y,z,s,e,.085,.04),.07);return Math.max(d+.012*vnoise3(x*14,y*4,z*14),-y-.05);};}
+function tree(P,k,c,type){k=k||1;type=type||'broad';const v=Math.abs(Math.round((P.M[12]*7.3+P.M[14]*3.1)))%3;const tc=c||(type==='pine'?[.2,.42,.24]:type==='acacia'?[.42,.56,.24]:[.32,.56,.24]);
+ const key=type+v;const def=treeDef(type,v*3+1);
+ const tm=propMesh('trunk'+key,trunkSDF(def),[-2,-.06,-2],[2,def.trunkH+1.8,2],.035);draw(tm,{P,s:[k,k,k],c:[.4,.28,.17],pat:2,patS:7});
+ const cm=propMesh('can'+key,canopySDF(def,v*1.7),type==='pine'?[-1.5,.8,-1.5]:[-2.4,1.0,-2.4],type==='pine'?[1.5,4.6,1.5]:[2.4,4.0,2.4],.05);draw(cm,{P,s:[k,k,k],c:tc,pat:1,patS:3});}
+// --- rocks: faceted boulders (random plane cuts + noise)
+function rockSDF(seed){const R=rngS(seed+11);const pl=[];for(let i=0;i<11;i++){const u=R()*2-1,a=R()*Math.PI*2;const r=Math.sqrt(1-u*u);const n=[r*Math.cos(a),Math.abs(u)*.8+.05*(u<0?-1:1)*(i%3),r*Math.sin(a)];const l=Math.hypot(...n);pl.push([n[0]/l,n[1]/l,n[2]/l,.3+R()*.16]);}
+ return(x,y,z)=>{const q=[x/1.25,(y-.25)/.85,z];let d=-1e9;for(const p of pl)d=SD.smax(d,q[0]*p[0]+q[1]*p[1]+q[2]*p[2]-p[3],.04);
+  d=SD.smax(d,SD.ell(x,y,z,[0,.25,0],[.8,.6,.72]),.05);d=Math.max(d,-y-.05);const cr=Math.abs(vnoise3(x*4.5+seed,y*4.5,z*4.5)-.5);return d+.05*vnoise3(x*5+seed,y*5,z*5)+.025*vnoise3(x*13,y*13+seed,z*13)-.01;};}
+function smoothstepJ(a,b,x){x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x);}
+function rock(P,k,c,seed){seed=(seed||0)%4;const m=propMesh('rockF'+seed,rockSDF(seed),[-.9,-.2,-.8],[.9,.9,.8],.025);draw(m,{P,s:[k||1,k||1,k||1],c:c||[.56,.53,.49],pat:6,patS:2.5});}
+// --- cow: detailed SDF (ribcage, hips, neck, head with muzzle, ears, horns, jointed legs, hooves, tail, udder) + patch pattern
+function cowSDF(){return(x,y,z)=>{let d=SD.ell(x,y,z,[0,1.0,.1],[.34,.36,.62]);d=SD.smin(d,SD.ell(x,y,z,[0,1.02,-.45],[.32,.34,.38]),.18);
+ for(const sd of[-1,1]){d=SD.smin(d,SD.ell(x,y,z,[sd*.2,1.18,-.55],[.1,.1,.12]),.08);d=SD.smin(d,SD.ell(x,y,z,[sd*.21,1.1,.42],[.12,.16,.18]),.1);}
+ d=SD.smin(d,SD.ell(x,y,z,[0,.8,.05],[.24,.12,.5]),.15);
+ d=SD.smin(d,SD.rc(x,y,z,[0,1.1,.55],[0,1.22,.82],.2,.15),.1);
+ d=SD.smin(d,SD.ell(x,y,z,[0,1.2,.92],[.13,.15,.16]),.06);d=SD.smin(d,SD.rc(x,y,z,[0,1.17,.95],[0,1.02,1.13],.11,.085),.06);d=SD.smin(d,SD.ell(x,y,z,[0,1.0,1.14],[.09,.07,.07]),.04);
+ for(const sd of[-1,1]){d=SD.smin(d,SD.ell(x,y,z,[sd*.17,1.25,.9],[.09,.035,.05]),.02);
+  for(const zz of[.42,-.5]){const front=zz>0;const top=[sd*.17,.85,zz],kn=[sd*.16,.45,zz+(front?.02:-.06)],an=[sd*.16,.12,zz+(front?0:.02)];
+   d=SD.smin(d,SD.rc(x,y,z,top,kn,front?.09:.11,.055),.06);d=SD.smin(d,SD.rc(x,y,z,kn,an,.05,.04),.02);d=SD.smin(d,SD.ell(x,y,z,kn,[.06,.06,.06]),.02);d=SD.smin(d,SD.rc(x,y,z,an,[an[0],.02,an[2]+.02],.045,.05),.015);}}
+ d=SD.smin(d,SD.rc(x,y,z,[0,1.22,-.78],[0,.62,-.86],.035,.02),.04);d=SD.smin(d,SD.ell(x,y,z,[0,.58,-.86],[.05,.09,.05]),.02);
+ d=SD.smin(d,SD.ell(x,y,z,[0,.72,-.3],[.12,.08,.1]),.06);return Math.max(d,-y);};}
+function cow(P,c){c=c||[.55,.38,.24];const m=propMesh('cowD',cowSDF(),[-.5,-.02,-1.0],[.5,1.45,1.25],.022);
+ draw(m,{P,c,pat:8,patS:1});const FX=Object.assign({},P,{noInk:1});draw(SPH,{P:FX,p:[0,.99,1.17],s:[.085,.06,.03],c:[.85,.66,.62]});
+ for(const sd of[-1,1]){draw(SPH,{P:FX,p:[sd*.03,.99,1.2],s:[.012,.01,.006],c:[.25,.15,.15]});draw(CONE,{P,p:[sd*.11,1.31,.93],r:[.3,0,sd*-1.0],s:[.025,.17,.025],c:[.92,.88,.78]});
+  draw(SPH,{P:FX,p:[sd*.105,1.21,1.03],s:[.022,.024,.016],c:[.06,.05,.05]});draw(SPH,{P:FX,p:[sd*.11,1.215,1.045],s:[.006,.006,.003],c:[1,1,1],u:1});}}
 function hut(P,o){o=o||{};const wc=o.wall||[.78,.55,.36],rc=o.roof||[.72,.6,.32];draw(CYL,{P,p:[0,0,0],s:[1.5,1.6,1.5],c:wc,pat:6,patS:3});
  const roof=propMesh('hutroof',(x,y,z)=>{const r=Math.hypot(x,z);return Math.max((r/1.98)*1.62+y-1.62-.0,-(y+.05))+.025*vnoise3(x*9,y*9,z*9)-.01;},[-2.1,-.1,-2.1],[2.1,1.75,2.1],.04);
  draw(roof,{P,p:[0,1.5,0],c:rc,pat:4,patS:4});
