@@ -46,13 +46,13 @@ function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const a
    for(const sd of[-1,1])U(SD.rc(x,y,z,[0,1.395,-.012],[sd*(sh-.045),1.36,-.012],.07,.056),0,.1);
    if(F){for(const sd of[-1,1])U(SD.ell(x,y,z,[sd*.05,1.25,.055],[.05,.045,.04]),0,.04);}}
   // neck + head
-  U(SD.rc(x,y,z,[0,1.37,-.008],[0,1.54,0],.053*(F?.92:1),.047*(F?.92:1)),1,.03);
+  U(SD.rc(x,y,z,[0,1.37,-.012],[0,1.54,-.006],.046*(F?.9:1),.041*(F?.9:1)),1,.035);
   const hk=F?.96:1;U(SD.ell(x,y,z,[0,1.625,.004],[.088*hk,.11*hk,.1*hk]),1,.02);
-  U(SD.ell(x,y,z,[0,1.572,.028],[.066*hk,.058*hk,.072*hk]),1,.03);
+  U(SD.ell(x,y,z,[0,1.572,.028],[.06*hk,.058*hk,.07*hk]),1,.03);
   U(SD.ell(x,y,z,[0,1.536,.058],[.028,.02,.024]),1,.02);
-  for(const sd of[-1,1]){U(SD.ell(x,y,z,[sd*.046,1.6,.064],[.03,.022,.026]),1,.02);U(SD.ell(x,y,z,[sd*.09*hk,1.612,-.002],[.014,.03,.02]),1,.008);}
+  for(const sd of[-1,1]){U(SD.ell(x,y,z,[sd*.044,1.602,.066],[.026,.02,.024]),1,.02);U(SD.ell(x,y,z,[sd*.09*hk,1.612,-.002],[.014,.03,.02]),1,.008);}
   U(SD.ell(x,y,z,[0,1.657,.07],[.068*hk,.018,.03]),1,.02);
-  U(SD.rc(x,y,z,[0,1.632,.09],[0,1.59,.113],.009,.014),1,.012);U(SD.ell(x,y,z,[0,1.589,.103],[.02,.012,.016]),1,.008);
+  U(SD.rc(x,y,z,[0,1.632,.09],[0,1.592,.11],.008,.0115),1,.012);U(SD.ell(x,y,z,[0,1.59,.101],[.017,.011,.014]),1,.008);
   for(const sd of[-1,1]){const d=SD.sph(x,y,z,[sd*.034,1.632,.094],.019);best=SD.smax(best,-d,.008);}
   // hair
   if(hs!=='bald'){const ang=Math.atan2(x,z);const gro=.0022*Math.sin(ang*38+y*25)+.0018*vnoise3(x*60,y*12,z*60);const hd=Math.max(SD.ell(x,y,z,[0,1.649,-.012],[.096*hk,.106*hk,.108*hk])+gro,(1.69-1.25*Math.max(0,.02-z))-y+.004*Math.sin(x*90));U(hd,6,.006);
@@ -137,7 +137,7 @@ function person(P,o){o=o||{};const sk=o.skin||SKINS[0],hc=o.hair||HAIRS[0],coat=
  if(o.mouthO)draw(SPH,{P:FX,p:[0,1.566,.098],s:[.011,.009,.005],c:[.3,.1,.1]});
  const HH=Object.assign({},HB,{id:nextId()});
  if(o.beard)draw(SPH,{P:HH,p:[0,1.55,.05],s:[.07,.05,.06],c:hc});
- if(o.moustache)draw(SPH,{P:Object.assign({},HB,{noShadow:1}),p:[0,1.578,.1],s:[.027,.007,.011],c:hc});
+ if(o.moustache){draw(SPH,{P:Object.assign({},HB,{noShadow:1}),p:[0,1.5748,.1],r:[-.25,0,0],s:[.024,.0055,.012],c:hc});}
  const HT=cxf(Object.assign({},HB,{id:nextId()}),xf([0,1.615,0]));const hat=o.hat||'none';const hcl=o.hatc||[.2,.18,.16];
  if(hat==='cap'){draw(SPH,{P:HT,p:[0,.06,-.005],s:[.106,.065,.112],c:hcl});draw(CYL,{P:HT,p:[0,.06,.1],r:[.2,0,0],s:[.085,.012,.06],c:hcl});}
  if(hat==='flat'){draw(SPH,{P:HT,p:[0,.07,.0],s:[.116,.058,.122],c:hcl});draw(CYL,{P:HT,p:[0,.075,.04],r:[.14,0,0],s:[.125,.018,.13],c:hcl});}

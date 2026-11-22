@@ -243,7 +243,7 @@ function setGrid(x0,x1,z0,z1,hf){for(let j=0;j<=GZ;j++)for(let i=0;i<=GX;i++){co
  const nn=norm([(l-r)/(2*dx),1,(d-u)/(2*dz)]);gN[k]=nn[0];gN[k+1]=nn[1];gN[k+2]=nn[2];}
  gl.bindBuffer(gl.ARRAY_BUFFER,GRID.pb);gl.bufferSubData(gl.ARRAY_BUFFER,0,gP);gl.bindBuffer(gl.ARRAY_BUFFER,GRID.nb);gl.bufferSubData(gl.ARRAY_BUFFER,0,gN);}
 // ---------- draw ----------
-let GOLDUSED=false;let INK_DEF=.75;let TOON=.3;let CLIP=[0,0,0,-1];let OID=1,PULSE=0,TRANS=false;const POST={desat:0,ink:1,glow:1,inkFar:120,sky:1,clouds:.5,skyTop:[.3,.5,.85],cloudC:[1,1,1],ao:.3,fog:[.75,.85,.95],sunD:[-.4,.8,.45]};let ENVF=null;
+let GOLDUSED=false;let INK_DEF=.75;let TOON=.12;let CLIP=[0,0,0,-1];let OID=1,PULSE=0,TRANS=false;const POST={desat:0,ink:1,glow:1,inkFar:120,sky:1,clouds:.5,skyTop:[.3,.5,.85],cloudC:[1,1,1],ao:.3,fog:[.75,.85,.95],sunD:[-.4,.8,.45]};let ENVF=null;
 function nextId(){OID=(OID+1)%250;return OID;}
 function draw(m,o){const p=o.p||[0,0,0],s=o.s||[1,1,1],R=rot(o.r||[0,0,0]);
  let M=mul(mul(new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,p[0],p[1],p[2],1]),R),new Float32Array([s[0],0,0,0,0,s[1],0,0,0,0,s[2],0,0,0,0,1]));
