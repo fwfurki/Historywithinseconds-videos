@@ -82,7 +82,7 @@ function crowd(cx0,cz,n,t,face){for(let i=0;i<n;i++){const x=cx0-Math.floor(i/5)
  person(xf([x,hf(x,z),z],[0,face+Math.sin(i)*.3,0],kid?.62:1),{coat:[[.25,.28,.38],[.4,.3,.22],[.3,.3,.3],[.55,.2,.18],[.2,.35,.3]][i%5],dress:i%3==1?[[.35,.25,.4],[.5,.3,.25],[.25,.3,.45]][i%3]:0,hat:kid?'cap':['bowler','flat','none','flat','bowler'][i%5],hairStyle:i%3==1?'bun':'short',
   ...(i%6==0?POSE.point:{}),head:[-.1,0,0]});}}
 function sHook(t){// crowd on hillside watching burning ship (gold)
- const k=ease(ss(0,3.8,t));const T=30;const p=mbPos(T);env({...DAY,eye:[lerp(-25,-22,k),hf(-24,6)+lerp(3.2,2.8,k),6],tgt:[lerp(-6,-4,k),1.6,-1],fov:44,desat:.35});harbour();
+ const k=ease(ss(0,3.8,t));const T=30;const p=mbPos(T);env({...DAY,bloom:1,eye:[lerp(-25,-22,k),hf(-24,6)+lerp(3.2,2.8,k),6],tgt:[lerp(-6,-4,k),1.6,-1],fov:44,desat:.35});harbour();
  ship({...xf(p,[0,-1.1,0]),gold:1},{cargo:1,hull:[.2,.2,.22],sup:[.85,.82,.75],gold:1});flames(p[0],2,p[2],t,1.2);smoke(p[0],3,p[2],t,1.3);
  crowd(-15.5,4.6,10,t,-Math.PI/2+Math.PI);grass('hook',hf,-22,-12.2,0,10,500);}
 function sCity(t){const a=-.5+t*.06;env({...DAY,eye:[Math.sin(a)*70,38,Math.cos(a)*70],tgt:[-6,0,0],fov:44});harbour();
