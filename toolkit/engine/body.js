@@ -63,9 +63,7 @@ function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const a
   for(const sd of[-1,1]){const s=[sd*sh,1.41,0],e=[sd*.225*sh/.19,1.125,-.01],w=[sd*(.25*sh/.19-.005*F),.87,.005],t=[sd*(.262*sh/.19-.005*F),.765,.018];
    U(SD.rc(x,y,z,s,e,.05*ar,.041*ar),2,.035);U(SD.ell(x,y,z,[s[0]*.6+e[0]*.4,1.3,0],[.045*ar,.08,.045*ar]),2,.02);
    U(SD.rc(x,y,z,e,w,.041*ar,.03*ar),2,.02);
-   const pc=[w[0]*.55+t[0]*.45,.825,.01];U(SD.ell(x,y,z,pc,[.02*ar,.045,.04*ar]),3,.02);
-   U(SD.rc(x,y,z,[pc[0],.81,.012],[t[0],.755,.016],.02*ar,.016*ar),3,.015);
-   U(SD.rc(x,y,z,[w[0]-sd*.005,.85,.03],[pc[0]-sd*.012,.8,.05],.011*ar,.009*ar),3,.008);}
+   U(SD.ell(x,y,z,[w[0],.866,.006],[.017*ar,.018,.021*ar]),3,.01);}
   // legs (4), feet (5)
   for(const sd of[-1,1]){const h=[sd*.092*(F?1.05:1),.92,0],k=[sd*.096,.5,.012],a=[sd*.098,.085,-.012];
    U(SD.rc(x,y,z,h,k,.083*lr,.054*lr),4,.04);U(SD.ell(x,y,z,[sd*.097,.36,-.012],[.05*lr,.11,.05*lr]),4,.03);U(SD.rc(x,y,z,k,a,.052*lr,.034*lr),4,.02);
@@ -104,6 +102,13 @@ function poseBones(R){// R[b]=[rx,ry,rz] local rotations; returns Float32Array(2
   const L=mul(pa<0?T4(j[0],j[1]+(R.bob||0),j[2]):mul(Wp[pa],T4(j[0]-BJ[pa][0],j[1]-BJ[pa][1],j[2]-BJ[pa][2])),rot(rb));Wp[b]=L;BN.set(mul(L,T4(-j[0],-j[1],-j[2])),b*16);}
  return BN;}
 function boneXF(P,BN,b){const M=BN.subarray(b*16,b*16+16);const Rm=new Float32Array(M);Rm[12]=Rm[13]=Rm[14]=0;return{M:mul(P.M,M),R:mul(P.R,Rm),gold:P.gold,id:P.id};}
+// ---------- detailed hands (separate fine mesh on the hand bone) ----------
+function handSDF(side){const m=side;return(x,y,z)=>{x*=m;let d=SD.ell(x,y,z,[.0,-.045,.006],[.017,.04,.036]);
+ const Z=[.025,.009,-.007,-.022],L=[.068,.075,.071,.058];for(let i=0;i<4;i++){const k=[.003,-.08,Z[i]],md=[.011,-.08-L[i]*.48,Z[i]*1.05],tp=[.02,-.08-L[i]*.88,Z[i]*1.08];
+  d=SD.smin(d,SD.rc(x,y,z,k,md,.0088,.0078),.008);d=SD.smin(d,SD.rc(x,y,z,md,tp,.0078,.0066),.004);}
+ d=SD.smin(d,SD.rc(x,y,z,[.008,-.028,.028],[.026,-.058,.043],.0115,.009),.012);d=SD.smin(d,SD.rc(x,y,z,[.026,-.058,.043],[.036,-.082,.042],.009,.0075),.004);
+ return d;};}
+function handMesh(side){return propMesh('hand'+side,handSDF(side),[side<0?-.07:-.035,-.17,-.045],[side<0?.035:.07,.012,.065],.0034);}
 // ---------- person (smooth) ----------
 const PERSON_SEED={n:0};
 function person(P,o){o=o||{};const sk=o.skin||SKINS[0],hc=o.hair||HAIRS[0],coat=o.coat||[.28,.32,.42],pants=o.pants||[.22,.22,.26],shirt=o.shirt||[.92,.9,.85];
@@ -125,9 +130,11 @@ function person(P,o){o=o||{};const sk=o.skin||SKINS[0],hc=o.hair||HAIRS[0],coat=
  if(o.sit){for(const hb of[10,13]){R[hb]=[-1.45,0,0];R[hb+1]=[1.5,0,0];R[hb+2]=[-.05,0,0];}}
  const BN=poseBones(R);const id=nextId();const PP=Object.assign({},P,{id});
  const mats=new Float32Array([...sk,...(o.dress||coat),...(o.sleeve||shirt),...pants,...(o.shoes||[.13,.1,.08]),...hc,...(o.tie||o.belt||[.2,.14,.1]),...(o.dress||coat)]);
- const mp=[o.sleeve?-.56:(o.shortSleeve?.18:.56),o.dress?1:0,(o.dress||o.noVneck)?0:1,o.longcoat?1:0];
+ const mp=[o.sleeve?-.585:(o.shortSleeve?.18:.585),o.dress?1:0,(o.dress||o.noVneck)?0:1,o.longcoat?1:((o.dress||o.apron||o.jacket===false)?0:.5)];
  if(o.sleeve)mats.set(o.sleeve,6);
  draw(m,{P:PP,c:[1,1,1],bones:BN,mats,mp,g:.15});
+ // detailed hands
+ {const shx=fem?.172:.19;for(const sd of[-1,1]){const b=sd<0?6:9;const wx=sd*(.25*shx/.19-.005*(fem?1:0));const HP=cxf(boneXF(PP,BN,b),xf([wx,.877,.005],[0,0,sd*-.08],fem?.9:1));draw(handMesh(sd<0?1:-1),{P:HP,c:sk});}}
  // face details on head bone
  const HB=boneXF(PP,BN,3);const FX=Object.assign({},HB,{noInk:1,noShadow:1});const ec=o.eyes||[.32,.2,.12];const blink=((tt*.37+.5+(o.seed||0)*.13)%1)<.025?1:0;
  for(const sd of[-1,1]){const ex=sd*.034;draw(SPH,{P:FX,p:[ex,1.632,.0845],s:[.0148,.0148,.0148],c:blink?mix3(sk,[0,0,0],.08):[.95,.94,.92]});

@@ -59,12 +59,12 @@ void main(){
    else if(dress&&q.y>.12){base=mc[7];}
    else if(q.y<.105){base=mc[4];}
    else{base=q.y<.905?(dress?mc[0]*.97:mc[3]):cloth;
-    if(!dress&&mp.w<.5&&q.y>=.905&&q.y<.955)base=vec3(.16,.11,.08);
-    if(mp.w>.5&&q.y>.52&&q.y<.96)base=mc[1];
+    if(!dress&&mp.w<.25&&q.y>=.905&&q.y<.955)base=vec3(.16,.11,.08);
+    {float hem=mp.w>.75?.52:.79;if(mp.w>.25&&q.y>hem&&q.y<.96){base=mc[1];if(q.y<hem+.018)base*=.78;if(q.z>.06&&abs(q.x)<.012+(.96-q.y)*.25&&q.y<.93)base=mix(mc[3],mc[1],.15);}}
     if(mp.z>.5&&q.z>0.&&q.y>1.16&&q.y<coll&&abs(q.x)<(q.y-1.16)*.3+.008){base=mc[2];float tw=.009+.006*smoothstep(1.36,1.39,q.y);if(abs(q.x)<tw&&q.y<1.395&&q.y>1.18)base=mc[6]*(1.-.15*step(1.37,q.y));}
     if(mp.z>.5&&q.z>0.&&q.y>1.33&&q.y<1.4&&abs(q.x)>.012&&abs(q.x)<.06&&(q.y-1.33)>(abs(q.x)-.012)*.9)base=mc[2]*.97;
     if(mp.z>.5&&q.z>0.&&q.y>1.16&&q.y<coll){float ed=abs(abs(q.x)-((q.y-1.16)*.3+.008));base=mix(base,mc[1]*.75,smoothstep(.008,.0,ed)*.8);}
-    if(mp.w<.5&&mp.z>.5&&q.z>.05&&q.y<1.1&&q.y>.97){float bt=smoothstep(.009,.004,length(vec2(q.x-.01,mod(q.y-.97,.065)-.032)));base=mix(base,vec3(.85,.75,.45),bt);}}}
+    if(mp.w<.75&&mp.z>.5&&q.z>.05&&q.y<1.1&&q.y>.97){float bt=smoothstep(.009,.004,length(vec2(q.x-.01,mod(q.y-.97,.065)-.032)));base=mix(base,vec3(.85,.75,.45),bt);}}}
   base=mix(base,mc[5],smoothstep(.35,.65,vH));}
 #endif
 #if TEX==1
