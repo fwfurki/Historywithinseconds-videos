@@ -147,10 +147,13 @@ const sprS=prog('#version 300 es\n#define SKIN 1\n'+svsT,sfs);const SUS={M:gl.ge
 // post: ink outlines + SSAO + sky/clouds + gold halo + desaturation (hi-res), then downsample
 const pvs=`#version 300 es
 in vec3 p;out vec2 uv;void main(){uv=p.xy*.5+.5;gl_Position=vec4(p.xy,0.,1.);}`;
-const pfsT=`precision highp float;in vec2 uv;uniform sampler2D cT,aT,dT,skT;uniform vec2 px;uniform float desat,ink,glow,near,far,inkFar,rs,focal,aoAmt;out vec4 o;
+const pfsT=`precision highp float;in vec2 uv;uniform sampler2D cT,aT,dT,skT;uniform vec2 px;uniform float desat,ink,glow,near,far,inkFar,rs,focal,aoAmt,dofF,dofR;out vec4 o;
 float ld(vec2 q){float z=texture(dT,q).r*2.-1.;return 2.*near*far/(far+near-z*(far-near));}
 void main(){vec3 c=texture(cT,uv).rgb;vec4 a=texture(aT,uv);float zr=texture(dT,uv).r;float d0=ld(uv);float bgm=step(.99999,zr);
  vec2 o8[8]=vec2[](vec2(1,0),vec2(-1,0),vec2(0,1),vec2(0,-1),vec2(.7,.7),vec2(-.7,.7),vec2(.7,-.7),vec2(-.7,-.7));
+#if DOF
+ {float coc=clamp(abs(d0-dofF)/dofR-.15,0.,1.)*(1.-.0*bgm);float rr=coc*7.*rs;vec3 acc=c;float wsum=1.;for(int i=0;i<8;i++){for(int j=1;j<=2;j++){vec2 q=uv+o8[i]*px*rr*float(j)*.5;float dq=ld(q);float cq=clamp(abs(dq-dofF)/dofR-.15,0.,1.);float wq=dq<d0?cq:1.;acc+=texture(cT,q).rgb*wq;wsum+=wq;}}c=acc/wsum;}
+#endif
 #if SKY
  c=mix(c,texture(skT,uv).rgb,bgm);
 #endif
@@ -171,8 +174,8 @@ void main(){vec3 c=texture(cT,uv).rgb;vec4 a=texture(aT,uv);float zr=texture(dT,
  float L=dot(c,vec3(.299,.587,.114));vec3 dc=mix(c,vec3(L)*vec3(1.02,1.,.96),desat*(1.-g));
  dc=mix(dc,vec3(.07,.055,.06),e*.8);
  o=vec4(dc,1.);}`;
-const PPN=['cT','aT','dT','skT','px','desat','ink','glow','near','far','inkFar','rs','focal','aoAmt'];const PPC=new Map();
-function getPP(k){let e=PPC.get(k);if(!e){const[sk,ao,gw]=k.split('_').map(Number);const p=prog(pvs,'#version 300 es\n#define SKY '+sk+'\n#define AO '+ao+'\n#define GLOW '+gw+'\n'+pfsT);const u={};PPN.forEach(n=>u[n]=gl.getUniformLocation(p,n));e={p,u};PPC.set(k,e);}return e;}
+const PPN=['cT','aT','dT','skT','px','desat','ink','glow','near','far','inkFar','rs','focal','aoAmt','dofF','dofR'];const PPC=new Map();
+function getPP(k){let e=PPC.get(k);if(!e){const[sk,ao,gw,df]=k.split('_').map(Number);const p=prog(pvs,'#version 300 es\n#define SKY '+sk+'\n#define AO '+ao+'\n#define GLOW '+gw+'\n#define DOF '+(df||0)+'\n'+pfsT);const u={};PPN.forEach(n=>u[n]=gl.getUniformLocation(p,n));e={p,u};PPC.set(k,e);}return e;}
 // low-res sky (gradient + cel clouds)
 const skfs=`#version 300 es
 precision highp float;in vec2 uv;uniform float clouds,time;uniform vec3 fogC,skyTop,cloudC,camP,sunD;uniform mat4 iVP;out vec4 o;
@@ -266,17 +269,17 @@ function env(o){const e=o.eye,t=o.tgt;const sunD=norm(o.sunD||[-.4,.8,.45]);
  const fog=o.fog||[.75,.85,.95];ENVV++;ENVU={VP,e,sunD,sunC:o.sunC||[.62,.58,.5],sky:o.sky||[.62,.66,.74],gnd:o.gnd||[.42,.4,.36],fog,fogD:o.fogD||.006,plP:o.plP||[0,-999,0],plC:o.plC||[0,0,0],plR:o.plR||1,toon:o.toon===undefined?TOON:o.toon};
  const bg=o.bg||fog;gl.clearBufferfv(gl.COLOR,0,[bg[0],bg[1],bg[2],1]);gl.clearBufferfv(gl.COLOR,1,[.5,.5,0,0]);gl.clearBufferfi(gl.DEPTH_STENCIL,0,1,0);
  POST.desat=o.desat||0;POST.ink=o.ink===undefined?INK_DEF:o.ink;POST.glow=o.glow===undefined?1:o.glow;POST.inkFar=o.inkFar||120;CLIP=o.clip||[0,0,0,-1];
- POST.sky=(o.bg||o.noSky)?0:1;POST.fog=fog;POST.sunD=sunD;POST.skyTop=o.skyTop||mix3(fog,[.22,.45,.86],.6);POST.clouds=o.clouds===undefined?.5:o.clouds;{const lum=fog[0]*.3+fog[1]*.59+fog[2]*.11;POST.cloudC=o.cloudC||mix3(mix3([1,1,1],fog,.15),POST.skyTop,clamp(1-lum*1.7,0,.72));}POST.ao=(typeof NO_AO!=='undefined')?0:(o.ao===undefined?.32:o.ao);POST.VP=VP;}
+ POST.sky=(o.bg||o.noSky)?0:1;POST.fog=fog;POST.sunD=sunD;POST.skyTop=o.skyTop||mix3(fog,[.22,.45,.86],.6);POST.clouds=o.clouds===undefined?.5:o.clouds;{const lum=fog[0]*.3+fog[1]*.59+fog[2]*.11;POST.cloudC=o.cloudC||mix3(mix3([1,1,1],fog,.15),POST.skyTop,clamp(1-lum*1.7,0,.72));}POST.dof=o.dof||null;POST.ao=(typeof NO_AO!=='undefined')?0:(o.ao===undefined?.32:o.ao);POST.VP=VP;}
 // project world point to screen px
 function proj(w){const m=CAM.VP;const x=m[0]*w[0]+m[4]*w[1]+m[8]*w[2]+m[12],y=m[1]*w[0]+m[5]*w[1]+m[9]*w[2]+m[13],ww=m[3]*w[0]+m[7]*w[1]+m[11]*w[2]+m[15];return[(x/ww*.5+.5)*W,(1-(y/ww*.5+.5))*H,ww];}
 function quad(){const va=gl.createVertexArray();gl.bindVertexArray(va);gl.bindBuffer(gl.ARRAY_BUFFER,quadB);gl.enableVertexAttribArray(0);gl.vertexAttribPointer(0,3,gl.FLOAT,false,0,0);gl.drawArrays(gl.TRIANGLE_STRIP,0,4);gl.bindVertexArray(null);gl.deleteVertexArray(va);}
 function post(){gl.disable(gl.DEPTH_TEST);
  if(POST.sky){gl.bindFramebuffer(gl.FRAMEBUFFER,skfbo);gl.viewport(0,0,SKW,SKH);gl.useProgram(skp);gl.uniform1f(SKU.clouds,POST.clouds);gl.uniform1f(SKU.time,TIME);gl.uniform3fv(SKU.fogC,POST.fog);gl.uniform3fv(SKU.skyTop,POST.skyTop);gl.uniform3fv(SKU.cloudC,POST.cloudC);gl.uniform3fv(SKU.camP,CAM.e);gl.uniform3fv(SKU.sunD,POST.sunD);gl.uniformMatrix4fv(SKU.iVP,false,inv4(CAM.VP));quad();}
- const gw=GOLDUSED?1:0;GOLDUSED=false;const PE=getPP((POST.sky?1:0)+'_'+(POST.ao>0?1:0)+'_'+gw);const PU=PE.u;
+ const gw=GOLDUSED?1:0;GOLDUSED=false;const PE=getPP((POST.sky?1:0)+'_'+(POST.ao>0?1:0)+'_'+gw+'_'+(POST.dof?1:0));const PU=PE.u;
  gl.bindFramebuffer(gl.FRAMEBUFFER,pfbo);gl.viewport(0,0,RW,RH);gl.useProgram(PE.p);
  gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,cTex);gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,aTex);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,dTex);gl.activeTexture(gl.TEXTURE5);gl.bindTexture(gl.TEXTURE_2D,skTex);gl.activeTexture(gl.TEXTURE0);
  gl.uniform1i(PU.cT,0);gl.uniform1i(PU.aT,1);gl.uniform1i(PU.dT,2);gl.uniform1i(PU.skT,5);gl.uniform2f(PU.px,1/RW,1/RH);gl.uniform1f(PU.desat,POST.desat);gl.uniform1f(PU.ink,POST.ink);gl.uniform1f(PU.glow,POST.glow*(.8+.2*PULSE));
- gl.uniform1f(PU.near,CAM.near);gl.uniform1f(PU.far,CAM.far);gl.uniform1f(PU.inkFar,POST.inkFar);gl.uniform1f(PU.rs,RS);gl.uniform1f(PU.focal,CAM.focal);gl.uniform1f(PU.aoAmt,POST.ao);
+ gl.uniform1f(PU.near,CAM.near);gl.uniform1f(PU.far,CAM.far);gl.uniform1f(PU.inkFar,POST.inkFar);gl.uniform1f(PU.rs,RS);gl.uniform1f(PU.focal,CAM.focal);gl.uniform1f(PU.aoAmt,POST.ao);if(POST.dof){gl.uniform1f(PU.dofF,POST.dof[0]);gl.uniform1f(PU.dofR,POST.dof[1]);}
  quad();
  gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,W,H);gl.useProgram(dp);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,pTex);gl.uniform1i(DU.pT,0);gl.uniform2f(DU.opx,1/W,1/H);quad();
  pr=null;}

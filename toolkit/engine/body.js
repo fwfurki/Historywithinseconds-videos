@@ -57,7 +57,7 @@ function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const a
   U(SD.rc(x,y,z,[0,1.632,.09],[0,1.59,.113],.009,.014),1,.012);U(SD.ell(x,y,z,[0,1.589,.103],[.02,.012,.016]),1,.008);
   for(const sd of[-1,1]){const d=SD.sph(x,y,z,[sd*.034,1.632,.094],.019);best=SD.smax(best,-d,.008);}
   // hair
-  if(hs!=='bald'){const hd=Math.max(SD.ell(x,y,z,[0,1.649,-.012],[.096*hk,.106*hk,.108*hk]),(1.69-1.25*Math.max(0,.02-z))-y);U(hd,6,.006);
+  if(hs!=='bald'){const ang=Math.atan2(x,z);const gro=.0022*Math.sin(ang*38+y*25)+.0018*vnoise3(x*60,y*12,z*60);const hd=Math.max(SD.ell(x,y,z,[0,1.649,-.012],[.096*hk,.106*hk,.108*hk])+gro,(1.69-1.25*Math.max(0,.02-z))-y+.004*Math.sin(x*90));U(hd,6,.006);
    if(hs==='bun')U(SD.sph(x,y,z,[0,1.665,-.112],.045),6,.02);
    if(hs==='long')U(SD.ell(x,y,z,[0,1.55,-.07],[.1,.15,.055]),6,.03);}
   // arms (part 2), hands (3)
@@ -74,6 +74,7 @@ function bodySDF(v){const F=v.f,hs=v.hair,dr=v.dress;const sh=F?.172:.19;const a
    const fd=Math.max(SD.smin(SD.rc(x,y,z,[sd*.098,.06,-.03],[sd*.098,.04,.12],.04,.032),SD.ell(x,y,z,[sd*.098,.05,-.025],[.038,.045,.05]),.02),-y);U(fd,5,.02);}
   // skirt (7)
   if(dr)U(Math.max(SD.rc(x,y,z,[0,.99,0],[0,.08,0],.142,.33),.06-y),7,.03);
+  if(!wantPart&&(part===0||part===2||part===4||part===7)&&Math.abs(best)<.02&&y<1.42)best+=part===7?(.0045*Math.sin(Math.atan2(x,z)*15+vnoise3(x*4,y*3,z*4)*4)*(1.1-y)):(vnoise3(x*22,y*7,z*22)-.5)*.005;
   return wantPart?part:best;};}
 const BODY_CACHE=new Map();
 function bodyMesh(v){const key=(v.f?'f':'m')+v.hair+(v.dress?'d':'');let m=BODY_CACHE.get(key);if(m)return m;
@@ -196,3 +197,12 @@ function hut(P,o){o=o||{};const wc=o.wall||[.78,.55,.36],rc=o.roof||[.72,.6,.32]
  const roof=propMesh('hutroof',(x,y,z)=>{const r=Math.hypot(x,z);return Math.max((r/1.98)*1.62+y-1.62-.0,-(y+.05))+.025*vnoise3(x*9,y*9,z*9)-.01;},[-2.1,-.1,-2.1],[2.1,1.75,2.1],.04);
  draw(roof,{P,p:[0,1.5,0],c:rc,pat:4,patS:4});
  draw(BOX,{P,p:[0,.65,1.47],s:[.6,1.25,.08],c:[.25,.16,.1],pat:2,patS:6});if(o.light)draw(BOX,{P,p:[0,.65,1.5],s:[.45,1.1,.02],c:[1,.8,.4],u:1});}
+
+// --- grass tufts: merged blades over an area (cached by key); hfn(x,z)->ground height
+function grassField(key,hfn,x0,x1,z0,z1,n,seed){let m=PROP.get('grass'+key);if(!m){const P=[],N=[],I=[];const R=rngS(seed||3);
+ for(let i=0;i<n;i++){const x=x0+R()*(x1-x0),z=z0+R()*(z1-z0),y=hfn(x,z);const nb=4+Math.floor(R()*4);
+  for(let b=0;b<nb;b++){const a=R()*Math.PI*2,h=.12+R()*.16,w=.018+R()*.012,lean=.25+R()*.35;const cx=Math.cos(a),sz=Math.sin(a);
+   const bx=x+cx*.03,bz=z+sz*.03;const tx=bx+cx*h*lean,tz=bz+sz*h*lean;const px=-sz*w,pz=cx*w;const k=P.length/3;
+   P.push(bx-px,y,bz-pz,bx+px,y,bz+pz,tx,y+h,tz);const nn=norm([cx*.3,1,sz*.3]);N.push(...nn,...nn,...nn);I.push(k,k+1,k+2);}}
+ m=mesh(P,N,I);PROP.set('grass'+key,m);}return m;}
+function grass(key,hfn,x0,x1,z0,z1,n,c,seed){draw(grassField(key,hfn,x0,x1,z0,z1,n,seed),{c:c||[.42,.62,.3],noInk:1});}
