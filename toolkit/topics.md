@@ -14,6 +14,7 @@ Status: the first six rows are DRAFTS. Never post them; the topics are taken any
 | Lake Nyos CO2 disaster (Cameroon, 1986) | lake_nyos.mp4 | 2026-11-22 10:00 UTC | 437160097 |
 | Halifax Explosion (Mont-Blanc, 1917) | halifax_explosion_v4.mp4 (re-rendered with engine v4; old halifax_explosion.mp4 unused) | 2026-11-22 18:00 UTC | 437680860 |
 | Mary Celeste ghost ship (1872) | mary_celeste.mp4 | 2026-11-23 15:00 UTC | 438199130 |
+| Carrington Event solar storm (1859) | carrington_event.mp4 | 2026-11-23 18:00 UTC | 438294163 |
 
 Also avoid: the Dancing Plague of Strasbourg (owner said no).
 
