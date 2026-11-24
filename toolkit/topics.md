@@ -47,3 +47,10 @@ Also avoid: Lake Monoun (1984, covered inside the Lake Nyos video).
 Account-safety note: don't make new videos about recent violent events (e.g. anything like the Charlie Kirk assassination, roughly the last 25 years), assassinations of living-memory figures, suicides, or harm to children. See "Account safety" in PIPELINE.md.
 
 Also avoid topics too close to these (for example, another video on the same person or event from a different angle).
+
+## YouTube Shorts (from Nov 24 2026)
+| Topic | File | Scheduled | Metricool post id |
+|---|---|---|---|
+| Tunguska Event (re-post of the TikTok video, owner approved) | tunguska_event.mp4 | 2026-11-25 11:30 UTC | 440674149 |
+| Great Stink of London (re-post of the TikTok video, owner approved) | great_stink.mp4 | 2026-11-25 13:00 UTC | 440674305 |
+These two are one-off extra slots; they do not fill the 15:00/18:00 UTC slots. Never re-post them again.
