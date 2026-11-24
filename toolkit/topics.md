@@ -16,6 +16,7 @@ Status: the first six rows are DRAFTS. Never post them; the topics are taken any
 | Mary Celeste ghost ship (1872) | mary_celeste.mp4 | 2026-11-23 15:00 UTC | 438199130 |
 | Carrington Event solar storm (1859) | carrington_event.mp4 | 2026-11-23 18:00 UTC | 438294163 |
 | Tunguska Event (Siberia, 1908) | tunguska_event.mp4 | 2026-11-24 15:00 UTC | 439631279 |
+| Great Stink of London (1858) / Bazalgette's sewers | great_stink.mp4 | 2026-11-24 18:00 UTC | 439644952 |
 
 Also avoid: the Dancing Plague of Strasbourg (owner said no).
 
