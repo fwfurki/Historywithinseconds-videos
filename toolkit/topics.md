@@ -53,4 +53,5 @@ Also avoid topics too close to these (for example, another video on the same per
 |---|---|---|---|
 | Tunguska Event (re-post of the TikTok video, owner approved) | tunguska_event.mp4 | 2026-11-25 11:30 UTC | 440674149 |
 | Great Stink of London (re-post of the TikTok video, owner approved) | great_stink.mp4 | 2026-11-25 13:00 UTC | 440674305 |
+| Year Without a Summer (Tambora eruption, 1815–1816) | year_without_summer.mp4 | 2026-11-25 15:00 UTC | 441085965 |
 These two are one-off extra slots; they do not fill the 15:00/18:00 UTC slots. Never re-post them again.
