@@ -56,4 +56,5 @@ Also avoid topics too close to these (for example, another video on the same per
 | Year Without a Summer (Tambora eruption, 1815–1816) | year_without_summer.mp4 | 2026-11-25 15:00 UTC | 441085965 |
 | Great Moon Hoax (The Sun, New York, 1835) | great_moon_hoax.mp4 | 2026-11-25 18:00 UTC | 441100256 |
 | Pig War (San Juan Island, 1859) | pig_war.mp4 | 2026-11-26 15:00 UTC | 442489466 |
+| 1904 Olympic marathon (St. Louis: Lorz car ride, Hicks strychnine) | olympic_marathon_1904.mp4 | 2026-11-26 18:00 UTC | 442499125 |
 The two re-posts (Tunguska, Great Stink) are one-off extra slots; they do not fill the 15:00/18:00 UTC slots. Never re-post them again.
