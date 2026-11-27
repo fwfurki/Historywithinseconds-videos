@@ -57,4 +57,6 @@ Also avoid topics too close to these (for example, another video on the same per
 | Great Moon Hoax (The Sun, New York, 1835) | great_moon_hoax.mp4 | 2026-11-25 18:00 UTC | 441100256 |
 | Pig War (San Juan Island, 1859) | pig_war.mp4 | 2026-11-26 15:00 UTC | 442489466 |
 | 1904 Olympic marathon (St. Louis: Lorz car ride, Hicks strychnine) | olympic_marathon_1904.mp4 | 2026-11-26 18:00 UTC | 442499125 |
+| Arrow Stork / Pfeilstorch (Klütz 1822, proof of bird migration) | arrow_stork.mp4 | 2026-11-27 15:00 UTC | 443787100 |
+| Victor Lustig sells the Eiffel Tower (Paris 1925) — IN PROGRESS | eiffel_tower_con.mp4 | 2026-11-27 18:00 UTC (planned) | pending |
 The two re-posts (Tunguska, Great Stink) are one-off extra slots; they do not fill the 15:00/18:00 UTC slots. Never re-post them again.
