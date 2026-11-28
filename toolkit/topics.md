@@ -60,5 +60,5 @@ Also avoid topics too close to these (for example, another video on the same per
 | Arrow Stork / Pfeilstorch (Klütz 1822, proof of bird migration) | arrow_stork.mp4 | 2026-11-27 15:00 UTC | 443787100 |
 | Victor Lustig sells the Eiffel Tower (Paris 1925) | eiffel_tower_con.mp4 | 2026-11-27 18:00 UTC | 443797017 |
 | Kentucky Meat Shower (Bath County 1876, vulture theory) | kentucky_meat_shower.mp4 | 2026-11-28 15:00 UTC | 445005483 |
-| Dagen H: Sweden switches to right-hand traffic (3 Sept 1967) — reserved, in production | dagen_h.mp4 | 2026-11-28 18:00 UTC (planned) | — |
+| Dagen H: Sweden switches to right-hand traffic (3 Sept 1967) | dagen_h.mp4 | 2026-11-28 18:00 UTC | 445018969 |
 The two re-posts (Tunguska, Great Stink) are one-off extra slots; they do not fill the 15:00/18:00 UTC slots. Never re-post them again.
